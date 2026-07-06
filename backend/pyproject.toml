@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "energyshield-backend"
+version = "0.1.0"
+description = "EnergyShield AI backend - APIs, agents, knowledge graph, risk scoring, scenarios, and orchestration for energy supply chain resilience."
+authors = ["Ayush Kumar", "Abhishek Choudhary", "Mayur Raj"]
+readme = "../README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.0"
+uvicorn = { extras = ["standard"], version = "^0.32.0" }
+pydantic = "^2.9.0"
+pydantic-settings = "^2.5.0"
+sqlalchemy = "^2.0.35"
+psycopg = { extras = ["binary"], version = "^3.2.3" }
+alembic = "^1.13.3"
+neo4j = "^5.25.0"
+redis = "^5.1.1"
+httpx = "^0.27.2"
+pyyaml = "^6.0.2"
+python-dotenv = "^1.0.1"
+anthropic = "^0.36.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
+ruff = "^0.7.0"
+mypy = "^1.13.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

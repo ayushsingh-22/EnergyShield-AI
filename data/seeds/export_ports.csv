@@ -1,0 +1,11 @@
+port_id,port_name,country,latitude,longitude,supplier_id
+NOVOROSSIYSK,Novorossiysk Oil Terminal,Russia,44.72,37.77,RUSSIA
+BASRA,Basra Oil Terminal (Al Basrah),Iraq,29.69,48.80,IRAQ
+RAS_TANURA,Ras Tanura Terminal,Saudi Arabia,26.64,50.16,SAUDI_ARABIA
+FUJAIRAH,Fujairah Terminal,United Arab Emirates,25.12,56.34,UAE
+CORPUS_CHRISTI,Corpus Christi Terminal,United States,27.80,-97.40,USA
+BONNY,Bonny Export Terminal,Nigeria,4.45,7.16,NIGERIA
+MINA_AL_AHMADI,Mina Al Ahmadi Terminal,Kuwait,29.08,48.14,KUWAIT
+MALONGO,Malongo Terminal (Cabinda),Angola,-5.55,12.20,ANGOLA
+ACU,Acu Port Oil Terminal,Brazil,-21.80,-41.05,BRAZIL
+COATZACOALCOS,Coatzacoalcos Terminal,Mexico,18.15,-94.45,MEXICO

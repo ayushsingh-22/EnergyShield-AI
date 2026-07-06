@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python -m venv /tmp/es_venv)",
+      "Bash(/tmp/es_venv/Scripts/python -m pip install --quiet fastapi pydantic pydantic-settings uvicorn)",
+      "Bash(/tmp/es_venv/Scripts/python -c ' *)",
+      "Bash(taskkill //F //IM python.exe //FI \"WINDOWTITLE eq *\")",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs -r kill)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(/tmp/es_venv/Scripts/python -m compileall -q backend)",
+      "Bash(/tmp/es_venv/Scripts/python -m pip install --quiet pyyaml)",
+      "Bash(python -m pip --version)",
+      "Bash(pip --version)",
+      "Bash(where poetry *)",
+      "Bash(python -m pip show poetry)",
+      "Bash(python -m pip install --user --quiet poetry)",
+      "Bash(python -m poetry --version)"
+    ]
+  }
+}

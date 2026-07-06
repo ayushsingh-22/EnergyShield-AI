@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# Poetry
+poetry.lock.bak
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# Env files
+.env
+.env.local
+backend/.env
+frontend/.env
+
+# Databases / local data
+*.db
+*.sqlite3
+neo4j_data/
+postgres_data/
+redis_data/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

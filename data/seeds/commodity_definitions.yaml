@@ -1,0 +1,69 @@
+# EnergyShield AI - Commodity Definitions (seed data)
+#
+# One entry per commodity in the Phase 14 "Target Commodities" table
+# (ENERGYSHIELD_IMPLEMENTATION_PLAN.md). `status: implemented` means the
+# commodity has a live CommodityAdapter, knowledge graph nodes, and scenario
+# templates today; `status: roadmap` means it is planned per
+# docs/MULTI_COMMODITY_ROADMAP.md but not yet built.
+
+commodities:
+  - commodity_type: CRUDE_OIL
+    why_it_matters: >
+      India's single largest energy import bill item and the MVP focus of
+      EnergyShield AI; disruption directly affects refinery run rates,
+      retail fuel prices, and the current account deficit.
+    key_risks:
+      - Strait of Hormuz or Bab el-Mandeb closure/congestion
+      - OPEC+ supply cuts
+      - Sanctions on major suppliers (e.g. Russia, Iran)
+      - Refinery-grade compatibility constraints when switching suppliers
+      - Freight/tanker cost spikes during rerouting
+    status: implemented
+
+  - commodity_type: LNG
+    why_it_matters: >
+      Feeds power generation, city gas distribution, and fertilizer
+      production; India's LNG import dependence is rising as domestic gas
+      output plateaus.
+    key_risks:
+      - Export/liquefaction terminal outage at supplier country
+      - Shipping delay or rerouting on LNG carrier routes
+      - Spot (JKM-linked) price spikes during peak demand seasons
+      - Regasification terminal congestion on the Indian coast
+    status: roadmap
+
+  - commodity_type: COAL
+    why_it_matters: >
+      Still the dominant fuel for Indian power generation and core
+      industrial feedstock (steel, cement); import dependence is
+      concentrated in coking coal and high-grade thermal coal.
+    key_risks:
+      - Export country port disruption (e.g. Australia, Indonesia, South Africa)
+      - Rail bottlenecks moving coal from Indian ports to power plants
+      - Weather disruption (monsoon, cyclone) at ports and mines
+      - Export restrictions and coal-grade/quality mismatches
+    status: roadmap
+
+  - commodity_type: FERTILIZER
+    why_it_matters: >
+      Direct link to food security; India imports urea, DAP, and MOP and is
+      exposed to natural-gas feedstock costs even for domestically produced
+      urea.
+    key_risks:
+      - Natural gas feedstock price/availability shocks
+      - Urea, DAP, or MOP import disruption from key suppliers
+      - Seasonal (Kharif/Rabi) demand surges colliding with supply gaps
+      - Potash or phosphate rock export restrictions
+    status: roadmap
+
+  - commodity_type: CRITICAL_MINERALS
+    why_it_matters: >
+      Inputs to EV batteries, electronics, renewable energy equipment, and
+      defense manufacturing; India has very limited domestic reserves and
+      near-total processing dependence on a small number of countries.
+    key_risks:
+      - Export controls from concentrated supplier/processor countries
+      - Supplier concentration risk (e.g. rare-earth processing)
+      - Geopolitical or sanctions-driven trade restrictions
+      - Midstream processing bottlenecks outside India
+    status: roadmap

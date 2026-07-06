@@ -1,0 +1,10 @@
+scenario_type: RED_SEA_SHIPPING_DISRUPTION
+commodity_type: CRUDE_OIL
+default_duration_days: 30
+supply_reduction_percent_range: [3, 12]
+freight_cost_increase_percent_range: [15, 30]
+affected_chokepoints: [BAB_EL_MANDEB, SUEZ]
+assumptions:
+  - "Import share data is estimated"
+  - "Exact cargo ownership is simulated"
+  - "Cape of Good Hope rerouting adds transit distance rather than removing supply"

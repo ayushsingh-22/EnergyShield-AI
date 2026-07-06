@@ -1,0 +1,7 @@
+port_id,port_name,state,latitude,longitude,capacity_notes
+JAMNAGAR,Vadinar / Jamnagar Terminal,Gujarat,22.47,69.66,"Deepwater SPM terminal serving Reliance and Nayara refineries; largest single crude-receiving complex on India's west coast (throughput figure illustrative, not sourced)"
+PARADIP,Paradip Port,Odisha,20.32,86.67,"East-coast deepwater port feeding IOCL Paradip and, via pipeline assumption, Barauni and Numaligarh refineries (illustrative)"
+KOCHI,Kochi (Cochin) Port,Kerala,9.97,76.28,"Feeds BPCL Kochi refinery; also nearest major coastal port to the Mangalore/Padur SPR caverns in this seed set (illustrative)"
+CHENNAI,Chennai / Ennore Port,Tamil Nadu,13.08,80.29,"Feeds CPCL Chennai refinery (illustrative capacity notes)"
+JNPT,Mumbai / JNPT,Maharashtra,18.95,72.95,"Feeds BPCL and HPCL Mumbai refineries (illustrative capacity notes)"
+VIZAG,Visakhapatnam Port,Andhra Pradesh,17.68,83.22,"Feeds HPCL Visakhapatnam refinery and adjacent Visakhapatnam SPR cavern (illustrative capacity notes)"

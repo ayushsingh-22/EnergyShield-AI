@@ -1,0 +1,9 @@
+scenario_type: HORMUZ_PARTIAL_CLOSURE
+commodity_type: CRUDE_OIL
+default_duration_days: 15
+supply_reduction_percent_range: [10, 35]
+freight_cost_increase_percent_range: [8, 25]
+affected_chokepoints: [HORMUZ]
+assumptions:
+  - "Import share data is estimated"
+  - "Exact cargo ownership is simulated"

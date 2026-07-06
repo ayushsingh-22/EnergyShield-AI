@@ -1,0 +1,10 @@
+scenario_type: SANCTIONS_SHOCK
+commodity_type: CRUDE_OIL
+default_duration_days: 90
+supply_reduction_percent_range: [10, 40]
+freight_cost_increase_percent_range: [5, 15]
+affected_entities: [SANCTIONED_SUPPLIER]
+assumptions:
+  - "Import share data is estimated"
+  - "Exact cargo ownership is simulated"
+  - "Payment and insurance feasibility under sanctions is simulated, not sourced from bank/insurer data"

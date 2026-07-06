@@ -1,0 +1,10 @@
+scenario_type: PORT_CONGESTION
+commodity_type: CRUDE_OIL
+default_duration_days: 10
+supply_reduction_percent_range: [0, 5]
+freight_cost_increase_percent_range: [2, 10]
+affected_entities: [JNPT, SIKKA, PARADIP]
+assumptions:
+  - "Import share data is estimated"
+  - "Exact cargo ownership is simulated"
+  - "Berth and demurrage delay bands are analyst judgment pending PortWatch confirmation"

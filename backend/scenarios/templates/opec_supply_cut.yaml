@@ -1,0 +1,10 @@
+scenario_type: OPEC_SUPPLY_CUT
+commodity_type: CRUDE_OIL
+default_duration_days: 60
+supply_reduction_percent_range: [5, 20]
+freight_cost_increase_percent_range: [0, 5]
+affected_entities: [OPEC_PLUS]
+assumptions:
+  - "Import share data is estimated"
+  - "Exact cargo ownership is simulated"
+  - "Announced production cut compliance is assumed, not verified by tanker tracking"

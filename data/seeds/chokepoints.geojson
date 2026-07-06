@@ -1,0 +1,97 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "chokepoint_id": "HORMUZ",
+        "name": "Strait of Hormuz",
+        "risk_note": "Single-lane transit for most Gulf crude (Iraq, Saudi Arabia, UAE, Kuwait shares in this seed set); highest concentration risk for India's crude imports given Middle East import share."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [54.5, 25.5],
+            [57.0, 25.5],
+            [57.0, 27.5],
+            [54.5, 27.5],
+            [54.5, 25.5]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "chokepoint_id": "BAB_EL_MANDEB",
+        "name": "Bab el-Mandeb",
+        "risk_note": "Southern gateway to the Red Sea/Suez corridor; exposed to Yemen-linked maritime security incidents that have historically forced Cape of Good Hope rerouting."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [42.5, 12.0],
+            [44.0, 12.0],
+            [44.0, 13.5],
+            [42.5, 13.5],
+            [42.5, 12.0]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "chokepoint_id": "SUEZ",
+        "name": "Suez Canal",
+        "risk_note": "Narrow-canal transit connecting Mediterranean/Black Sea origins to the Red Sea; a single grounding or closure event can back up global tanker queues for weeks (illustrative modelling assumption)."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [32.2, 29.8],
+            [32.6, 29.8],
+            [32.6, 31.3],
+            [32.2, 31.3],
+            [32.2, 29.8]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "chokepoint_id": "CAPE_OF_GOOD_HOPE",
+        "name": "Cape of Good Hope (route waypoint)",
+        "risk_note": "Not a strait but the standard reroute waypoint when Suez/Bab el-Mandeb is avoided; adds roughly 1-2 weeks of transit time for Atlantic-basin and West African crude to India (illustrative)."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [18.47, -34.35]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "chokepoint_id": "MALACCA",
+        "name": "Strait of Malacca",
+        "risk_note": "Primary Pacific-to-Indian-Ocean transit for cargoes routed via the Panama Canal/Pacific rather than around Africa; congestion and piracy risk are the main modelled hazards."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [100.0, 1.0],
+            [103.0, 1.0],
+            [103.0, 4.0],
+            [100.0, 4.0],
+            [100.0, 1.0]
+          ]
+        ]
+      }
+    }
+  ]
+}

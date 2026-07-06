@@ -1,0 +1,10 @@
+scenario_type: CRITICAL_MINERAL_EXPORT_RESTRICTION
+commodity_type: CRITICAL_MINERALS
+default_duration_days: 120
+supply_reduction_percent_range: [15, 50]
+freight_cost_increase_percent_range: [0, 10]
+affected_entities: [CHINA_EXPORT_CONTROL]
+assumptions:
+  - "Import share data is estimated"
+  - "Exact cargo ownership is simulated"
+  - "Supplier concentration and substitution feasibility are simulated pending verified alternate-source data"

@@ -1,0 +1,53 @@
+[
+  {
+    "case_id": "CASE-REDSEA-2024-001",
+    "case_name": "Red Sea / Bab el-Mandeb shipping disruption (Houthi attacks)",
+    "commodity_type": "CRUDE_OIL",
+    "start_date": "2023-11-19",
+    "end_date": "2024-06-30",
+    "trigger_events": ["MARITIME_ATTACK", "AIS_REROUTING"],
+    "affected_corridors": ["RED_SEA", "SUEZ", "BAB_EL_MANDEB"],
+    "observed_outcomes": {
+      "average_delay_days": 10,
+      "freight_cost_increase_percent": 20,
+      "route_shift_detected": true,
+      "price_movement_percent": 5
+    },
+    "source_notes": "Directionally based on public reporting of Houthi attacks on Red Sea shipping starting November 2023 and the resulting Cape of Good Hope rerouting by many carriers; the specific delay/cost/price figures above are illustrative and simulated for this prototype, not sourced from a single verified dataset.",
+    "is_simulated": true
+  },
+  {
+    "case_id": "CASE-HORMUZ-2019-001",
+    "case_name": "Strait of Hormuz tanker incidents and seizures",
+    "commodity_type": "CRUDE_OIL",
+    "start_date": "2019-05-12",
+    "end_date": "2019-09-30",
+    "trigger_events": ["MARITIME_ATTACK", "POLITICAL_INSTABILITY"],
+    "affected_corridors": ["HORMUZ"],
+    "observed_outcomes": {
+      "average_delay_days": 4,
+      "freight_cost_increase_percent": 12,
+      "route_shift_detected": false,
+      "price_movement_percent": 8
+    },
+    "source_notes": "Directionally based on public reporting of tanker attacks near Fujairah and the Gulf of Oman and subsequent tanker seizures in 2019; no full Hormuz closure occurred and outcome figures here are illustrative/simulated for this prototype's calibration purposes, not audited historical statistics.",
+    "is_simulated": true
+  },
+  {
+    "case_id": "CASE-RUSSIA-REROUTE-2022-001",
+    "case_name": "Post-invasion reroute of India's crude sourcing toward discounted Russian barrels",
+    "commodity_type": "CRUDE_OIL",
+    "start_date": "2022-02-24",
+    "end_date": "2022-12-31",
+    "trigger_events": ["SANCTION_UPDATE", "OPEC_SUPPLY_CUT"],
+    "affected_corridors": ["SUEZ", "BAB_EL_MANDEB", "CAPE_OF_GOOD_HOPE"],
+    "observed_outcomes": {
+      "average_delay_days": 14,
+      "freight_cost_increase_percent": 15,
+      "route_shift_detected": true,
+      "price_movement_percent": 10
+    },
+    "source_notes": "Directionally based on the widely reported shift of India's crude import mix toward discounted Russian Urals following Western sanctions after February 2022; exact tanker/route/cost figures are simulated and illustrative for this prototype, not drawn from a single audited source.",
+    "is_simulated": true
+  }
+]
