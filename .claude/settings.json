@@ -17,7 +17,12 @@
       "Bash(where poetry *)",
       "Bash(python -m pip show poetry)",
       "Bash(python -m pip install --user --quiet poetry)",
-      "Bash(python -m poetry --version)"
+      "Bash(python -m poetry --version)",
+      "Bash(python -m poetry install --no-interaction)",
+      "Bash(cat /tmp/backend.log)",
+      "Read(//tmp/**)",
+      "Bash(xargs sed -i 's/from backend\\\\./from /g')",
+      "Bash(sleep 3 && cat /tmp/frontend.log)"
     ]
   }
 }

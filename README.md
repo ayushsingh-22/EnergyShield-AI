@@ -56,13 +56,18 @@ docker-compose up --build
 
 ### Option B: Run services locally
 
-Backend (requires [Poetry](https://python-poetry.org/)):
+Backend (requires [Poetry](https://python-poetry.org/); if `poetry` isn't on
+your `PATH` after `pip install poetry`, substitute `python -m poetry` for
+`poetry` below):
 
 ```bash
 cd backend
 poetry install
 poetry run uvicorn main:app --reload
 ```
+
+- Health check: <http://localhost:8000/api/v1/health>
+- Interactive API docs: <http://localhost:8000/docs>
 
 Frontend:
 
@@ -71,6 +76,13 @@ cd frontend
 npm install
 npm run dev
 ```
+
+- App: <http://localhost:5173>
+
+Run backend and frontend in separate terminals - both need to stay running
+for the dashboard to reach the live API (or set
+`VITE_USE_MOCK_DATA=true` in `frontend/.env.local` to work on the UI without
+the backend running).
 
 By default the frontend targets `VITE_USE_MOCK_DATA=true` (see
 `frontend/.env.example`), so UI work can proceed against

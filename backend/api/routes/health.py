@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter
 
-from backend.models.core_schema import EnergyShieldBaseModel
+from models.core_schema import EnergyShieldBaseModel
 
 router = APIRouter(prefix="/health", tags=["health"])
 

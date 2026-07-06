@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import Field
 
-from backend.models.core_schema import (
+from models.core_schema import (
     Assumption,
     CommodityType,
     EnergyShieldBaseModel,

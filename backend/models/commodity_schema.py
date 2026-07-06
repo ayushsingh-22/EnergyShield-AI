@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from backend.models.core_schema import CommodityType, EnergyShieldBaseModel
+from models.core_schema import CommodityType, EnergyShieldBaseModel
 
 
 class Commodity(EnergyShieldBaseModel):

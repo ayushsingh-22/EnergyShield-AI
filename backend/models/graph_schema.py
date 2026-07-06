@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import Field
 
-from backend.models.core_schema import EnergyShieldBaseModel
+from models.core_schema import EnergyShieldBaseModel
 
 
 class GraphNode(EnergyShieldBaseModel):

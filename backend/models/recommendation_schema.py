@@ -6,7 +6,7 @@ from datetime import datetime
 
 from pydantic import Field
 
-from backend.models.core_schema import (
+from models.core_schema import (
     ActionPriority,
     Assumption,
     CommodityType,

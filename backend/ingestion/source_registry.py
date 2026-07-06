@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from backend.models.data_source_schema import DataSourceDefinition
+from models.data_source_schema import DataSourceDefinition
 
 
 def get_active_sources() -> list[DataSourceDefinition]:

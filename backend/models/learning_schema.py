@@ -7,7 +7,7 @@ from enum import Enum
 
 from pydantic import Field
 
-from backend.models.core_schema import CommodityType, EnergyShieldBaseModel, RiskEventType
+from models.core_schema import CommodityType, EnergyShieldBaseModel, RiskEventType
 
 
 class ObservedOutcome(EnergyShieldBaseModel):
