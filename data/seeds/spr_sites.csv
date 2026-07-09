@@ -1,5 +1,4 @@
-site_id,site_name,state,capacity_mmt,latitude,longitude,linked_refinery_ids,data_quality
-SPR-VIZAG,Visakhapatnam Strategic Reserve,Andhra Pradesh,1.33,17.70,83.30,REF-VIZAG,actual
-SPR-MANGALORE,Mangalore Strategic Reserve,Karnataka,1.50,12.90,74.80,REF-KOCHI,actual
-SPR-PADUR,Padur Strategic Reserve,Karnataka,2.50,13.30,74.75,REF-KOCHI,actual
-SPR-CONCEPT-WEST,Illustrative Future SPR Site (Western Coast Concept - not an announced project),Maharashtra,2.00,17.50,73.00,,simulated
+entity_id,name,capacity_mmbbl,supported_refinery_ids,lat,lon
+SPR_VIS,Visakhapatnam SPR,9.75,REF_VIS,17.68,83.21
+SPR_MAN,Mangalore SPR,11.0,REF_MAN,12.92,74.80
+SPR_PAD,Padur SPR,18.3,REF_MAN,13.23,74.79

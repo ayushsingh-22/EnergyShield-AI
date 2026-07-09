@@ -15,7 +15,7 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
 | GET | `/health` | Live (Phase 0) | `health.HealthStatus` | Liveness check |
-| GET | `/data/freshness` | Planned (Phase 1) | `data_source_schema.SourceFreshness[]` | Per-source last-fetch time and health |
+| GET | `/data/freshness` | Live (Phase 1) | `data_source_schema.SourceFreshness[]` | Per-source last-fetch time and health |
 
 ## Events
 
@@ -36,22 +36,22 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
-| GET | `/digital-twin/map` | Planned (Phase 2) | map layer bundle | Suppliers, routes, chokepoints, ports, refineries, SPR sites |
-| GET | `/digital-twin/suppliers` | Planned (Phase 2) | supplier list | |
-| GET | `/digital-twin/routes` | Planned (Phase 2) | route list | |
-| GET | `/digital-twin/chokepoints` | Planned (Phase 2) | chokepoint list | |
-| GET | `/digital-twin/refineries` | Planned (Phase 2) | refinery list | |
-| GET | `/digital-twin/exposure` | Planned (Phase 2) | exposure baseline | |
+| GET | `/digital-twin/map` | Live (Phase 2) | map layer bundle | Suppliers, routes, chokepoints, ports, refineries, SPR sites |
+| GET | `/digital-twin/suppliers` | Live (Phase 2) | supplier list | |
+| GET | `/digital-twin/routes` | Live (Phase 2) | route list | |
+| GET | `/digital-twin/chokepoints` | Live (Phase 2) | chokepoint list | |
+| GET | `/digital-twin/refineries` | Live (Phase 2) | refinery list | |
+| GET | `/digital-twin/exposure` | Live (Phase 2) | exposure baseline | |
 
 ## Knowledge Graph
 
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
-| GET | `/graph/entity/{entity_id}` | Planned (Phase 3) | graph node + relationships | |
-| GET | `/graph/refineries-exposed?chokepoint_id=` | Planned (Phase 3) | refinery list | |
-| GET | `/graph/alternative-suppliers?supplier_id=&commodity=` | Planned (Phase 3) | supplier list | |
-| GET | `/graph/routes?supplier_id=` | Planned (Phase 3) | route list | |
-| POST | `/graph/query-impact` | Planned (Phase 3) | impact query result | |
+| GET | `/graph/entity/{entity_id}` | Live (Phase 3) | `graph_schema.GraphQueryResult` | Node + direct relationships; 404 if entity not seeded |
+| GET | `/graph/refineries-exposed?chokepoint_id=` | Live (Phase 3) | refinery list | |
+| GET | `/graph/alternative-suppliers?supplier_id=&commodity=` | Live (Phase 3) | supplier list | Excludes suppliers with an active (non-expired) AFFECTS edge |
+| GET | `/graph/routes?supplier_id=` | Live (Phase 3) | route list | |
+| POST | `/graph/query-impact` | Live (Phase 3) | `graph_schema.GraphQueryResult` | Body: `graph_schema.ImpactQueryRequest` (`entity_id`, `max_hops` 1-5) |
 
 ## Scenarios
 

@@ -4,173 +4,58 @@
     {
       "type": "Feature",
       "properties": {
-        "route_id": "ROUTE-RUSSIA-JAMNAGAR",
-        "supplier_id": "RUSSIA",
-        "import_port_id": "JAMNAGAR",
-        "transits_chokepoint_ids": ["SUEZ", "BAB_EL_MANDEB"]
+        "entity_id": "RT_BAS_JAM",
+        "name": "Basra to Jamnagar",
+        "origin_port_id": "PRT_BASRA",
+        "destination_port_id": "PRT_JAM",
+        "affected_chokepoint_ids": ["CHK_HORMUZ"],
+        "distance_km": 1800,
+        "estimated_transit_days": 4.5,
+        "route_status": "OPEN",
+        "route_type": "MARITIME",
+        "risk_level": "LOW"
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [
-          [37.77, 44.72],
-          [32.4, 30.5],
-          [43.3, 12.6],
-          [69.66, 22.47]
-        ]
+        "coordinates": [[48.80, 29.68], [55.0, 26.5], [69.96, 22.47]]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "route_id": "ROUTE-IRAQ-JAMNAGAR",
-        "supplier_id": "IRAQ",
-        "import_port_id": "JAMNAGAR",
-        "transits_chokepoint_ids": ["HORMUZ"]
+        "entity_id": "RT_RAS_MUN",
+        "name": "Ras Tanura to Mundra",
+        "origin_port_id": "PRT_RAS",
+        "destination_port_id": "PRT_MUN",
+        "affected_chokepoint_ids": ["CHK_HORMUZ"],
+        "distance_km": 1600,
+        "estimated_transit_days": 4.0,
+        "route_status": "OPEN",
+        "route_type": "MARITIME",
+        "risk_level": "LOW"
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [
-          [48.80, 29.69],
-          [56.25, 26.5],
-          [69.66, 22.47]
-        ]
+        "coordinates": [[50.17, 26.63], [56.0, 25.5], [69.73, 22.73]]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "route_id": "ROUTE-SAUDI-JAMNAGAR",
-        "supplier_id": "SAUDI_ARABIA",
-        "import_port_id": "JAMNAGAR",
-        "transits_chokepoint_ids": ["HORMUZ"]
+        "entity_id": "RT_NOV_JAM",
+        "name": "Novorossiysk to Jamnagar",
+        "origin_port_id": "PRT_NOVOROS",
+        "destination_port_id": "PRT_JAM",
+        "affected_chokepoint_ids": ["CHK_SUEZ", "CHK_BAB"],
+        "distance_km": 6000,
+        "estimated_transit_days": 18.0,
+        "route_status": "OPEN",
+        "route_type": "MARITIME",
+        "risk_level": "MEDIUM"
       },
       "geometry": {
         "type": "LineString",
-        "coordinates": [
-          [50.16, 26.64],
-          [56.25, 26.5],
-          [69.66, 22.47]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-UAE-MUMBAI",
-        "supplier_id": "UAE",
-        "import_port_id": "JNPT",
-        "transits_chokepoint_ids": []
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [56.34, 25.12],
-          [65.0, 21.0],
-          [72.95, 18.95]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-USA-KOCHI",
-        "supplier_id": "USA",
-        "import_port_id": "KOCHI",
-        "transits_chokepoint_ids": ["CAPE_OF_GOOD_HOPE"]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-97.40, 27.80],
-          [18.47, -34.35],
-          [76.28, 9.97]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-NIGERIA-VIZAG",
-        "supplier_id": "NIGERIA",
-        "import_port_id": "VIZAG",
-        "transits_chokepoint_ids": ["CAPE_OF_GOOD_HOPE"]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [7.16, 4.45],
-          [18.47, -34.35],
-          [83.22, 17.68]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-KUWAIT-JAMNAGAR",
-        "supplier_id": "KUWAIT",
-        "import_port_id": "JAMNAGAR",
-        "transits_chokepoint_ids": ["HORMUZ"]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [48.14, 29.08],
-          [56.25, 26.5],
-          [69.66, 22.47]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-ANGOLA-CHENNAI",
-        "supplier_id": "ANGOLA",
-        "import_port_id": "CHENNAI",
-        "transits_chokepoint_ids": ["CAPE_OF_GOOD_HOPE"]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [12.20, -5.55],
-          [18.47, -34.35],
-          [80.29, 13.08]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-BRAZIL-MUMBAI",
-        "supplier_id": "BRAZIL",
-        "import_port_id": "JNPT",
-        "transits_chokepoint_ids": ["CAPE_OF_GOOD_HOPE"]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-41.05, -21.80],
-          [18.47, -34.35],
-          [72.95, 18.95]
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "route_id": "ROUTE-MEXICO-PARADIP",
-        "supplier_id": "MEXICO",
-        "import_port_id": "PARADIP",
-        "transits_chokepoint_ids": ["MALACCA"]
-      },
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [-94.45, 18.15],
-          [-79.5, 8.9],
-          [101.4, 2.5],
-          [86.67, 20.32]
-        ]
+        "coordinates": [[37.77, 44.72], [28.9, 41.0], [32.3, 31.2], [43.2, 12.5], [69.96, 22.47]]
       }
     }
   ]

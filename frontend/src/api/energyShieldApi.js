@@ -1,9 +1,3 @@
-// Thin API client for the EnergyShield backend. Every function returns data
-// shaped like the schemas in backend/models/*.py (see docs/API_REFERENCE.md).
-// When VITE_USE_MOCK_DATA is true, calls resolve from mockData.js instead of
-// hitting the network - this lets frontend pages be built before the
-// corresponding backend endpoint exists.
-
 import * as mock from './mockData'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1'
@@ -25,9 +19,28 @@ export async function getHealth() {
   return request('/health')
 }
 
-// TODO(Phase 1): export async function getDataFreshness()
-// TODO(Phase 4): export async function getLatestEvents()
-// TODO(Phase 5): export async function getCorridorRisk() / getSupplierRisk()
-// TODO(Phase 2): export async function getDigitalTwinMap()
-// TODO(Phase 6): export async function runScenario(scenarioRequest)
-// TODO(Phase 7): export async function getRecommendation(scenarioId)
+export async function getDataFreshness() {
+  if (USE_MOCK_DATA) return mock.mockDataFreshness
+  return request('/data/freshness')
+}
+
+export async function getDigitalTwinMap() {
+  if (USE_MOCK_DATA) return mock.mockDigitalTwinMap
+  return request('/digital-twin/map')
+}
+
+export async function getDigitalTwinExposure() {
+  if (USE_MOCK_DATA) return mock.mockDigitalTwinExposure
+  return request('/digital-twin/exposure')
+}
+
+export async function getRefineriesExposed(chokepointId) {
+  if (USE_MOCK_DATA) return mock.mockRefineriesExposed
+  return request(`/graph/refineries-exposed?chokepoint_id=${encodeURIComponent(chokepointId)}`)
+}
+
+export async function getAlternativeSuppliers(supplierId, commodity) {
+  if (USE_MOCK_DATA) return mock.mockAlternativeSuppliers
+  const search = new URLSearchParams({ supplier_id: supplierId, commodity })
+  return request(`/graph/alternative-suppliers?${search.toString()}`)
+}

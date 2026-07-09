@@ -60,14 +60,22 @@ class NormalizedSignal(EnergyShieldBaseModel):
     reaches the event extraction agent (backend/ingestion/data_normalizer.py)."""
 
     signal_id: str
+    source: str
     source_name: str
     source_reliability: SourceReliability
+    reliability: SourceReliability
     commodity_type: CommodityType | None = None
     published_at: datetime | None = None
     detected_at: datetime
     title: str | None = None
     raw_text: str
     url: str | None = None
+    evidence_url: str | None = None
     geo_hint: Coordinates | None = None
     corridor_hint: str | None = None
+    country_hint: str | None = None
     is_simulated: bool = False
+    event_candidate: bool = False
+    confidence: float = 1.0
+    raw_record_id: str | None = None
+    metadata: dict = Field(default_factory=dict)

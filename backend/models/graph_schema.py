@@ -35,3 +35,15 @@ class GraphQueryResult(EnergyShieldBaseModel):
     nodes: list[GraphNode] = Field(default_factory=list)
     edges: list[GraphEdge] = Field(default_factory=list)
     query_description: str | None = None
+
+
+class ImpactQueryRequest(EnergyShieldBaseModel):
+    """Body for POST /api/v1/graph/query-impact.
+
+    Traverses outward from `entity_id` along the graph's forward
+    relationships (e.g. Chokepoint -> ShippingRoute -> ImportPort ->
+    Refinery) to surface everything that could be downstream-impacted.
+    """
+
+    entity_id: str
+    max_hops: int = Field(default=2, ge=1, le=5)

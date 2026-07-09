@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import List, Optional, Dict, Any
+from datetime import datetime, timezone
 from pydantic import Field
 
 from models.core_schema import (
@@ -12,101 +14,103 @@ from models.core_schema import (
 )
 
 
-class SupplierCountry(EnergyShieldBaseModel):
+class DigitalTwinEntityBase(EnergyShieldBaseModel):
+    """Base class for all spatial and logical entities in the Digital Twin."""
+    id: str = Field(alias="entity_id")
+    name: str
+    coordinates: Optional[Coordinates] = None
+    commodity_support: List[CommodityType] = Field(default_factory=lambda: [CommodityType.CRUDE_OIL])
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_simulated: bool = False
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+
+
+class Commodity(DigitalTwinEntityBase):
+    """A tracked commodity in the system (e.g. Crude Oil, LNG)."""
+    pass
+
+
+class SupplierCountry(DigitalTwinEntityBase):
     """A crude-oil supplier country and its baseline import exposure to India."""
-
-    entity_id: str
-    name: str
-    region: str
-    commodity_types: list[CommodityType] = Field(default_factory=list)
-    import_share_percent: float = Field(..., ge=0, le=100)
-    default_route_id: str | None = None
-    is_estimated: bool = True
-
-
-class ExportPort(EnergyShieldBaseModel):
-    """An export port used by a supplier country."""
-
-    entity_id: str
-    name: str
     country: str
-    supplier_id: str | None = None
-    coordinates: Coordinates | None = None
+    region: str
+    import_share_percent: float = Field(..., ge=0, le=100)
+    default_export_port_id: Optional[str] = None
+    default_shipping_route_id: Optional[str] = None
+    risk_metadata_placeholder: Dict[str, Any] = Field(default_factory=dict)
+    data_source: str = "estimated"
+    supported_crude_grade_ids: List[str] = Field(default_factory=list)
 
 
-class ShippingRoute(EnergyShieldBaseModel):
-    """A line-string shipping route linking an export port to an import port."""
+class SupplierCompany(DigitalTwinEntityBase):
+    """Optional entity representing a specific supplier company (e.g. Saudi Aramco)."""
+    country: str
+    parent_company: Optional[str] = None
 
-    entity_id: str
-    name: str
+
+class ExportPort(DigitalTwinEntityBase):
+    """An export port used by a supplier country."""
+    country: str
+    connected_supplier_ids: List[str] = Field(default_factory=list)
+    capacity_mmt: Optional[float] = Field(default=None, ge=0, description="Estimated capacity in MMT")
+
+
+class ShippingRoute(DigitalTwinEntityBase):
+    """A shipping route linking an export port to an import port."""
     origin_port_id: str
     destination_port_id: str
-    chokepoint_ids: list[str] = Field(default_factory=list)
-    distance_km: float | None = Field(default=None, ge=0)
-    typical_transit_days: float | None = Field(default=None, ge=0)
+    affected_chokepoint_ids: List[str] = Field(default_factory=list)
+    distance_km: Optional[float] = Field(default=None, ge=0)
+    estimated_transit_days: Optional[float] = Field(default=None, ge=0)
+    route_geometry: Optional[Dict[str, Any]] = Field(default=None, description="GeoJSON LineString coords")
+    route_status: str = "OPEN"
+    route_type: str = "MARITIME"
     risk_level: RiskLevel = RiskLevel.LOW
 
 
-class Chokepoint(EnergyShieldBaseModel):
-    """A maritime chokepoint polygon or bounding box (e.g. Hormuz, Bab el-Mandeb, Suez)."""
-
-    entity_id: str
-    name: str
-    region: str
-    coordinates: Coordinates | None = None
+class Chokepoint(DigitalTwinEntityBase):
+    """A maritime chokepoint (e.g. Hormuz, Bab el-Mandeb, Suez)."""
+    country_region: str
+    importance_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    connected_route_ids: List[str] = Field(default_factory=list)
+    geometry: Optional[Dict[str, Any]] = Field(default=None, description="GeoJSON Polygon")
     risk_level: RiskLevel = RiskLevel.LOW
 
 
-class ImportPort(EnergyShieldBaseModel):
+class ImportPort(DigitalTwinEntityBase):
     """An Indian crude import port."""
-
-    entity_id: str
-    name: str
+    state: str
     country: str = "India"
-    coordinates: Coordinates | None = None
-    annual_capacity_mmt: float | None = Field(default=None, ge=0)
+    connected_refinery_ids: List[str] = Field(default_factory=list)
+    capacity_mmt: Optional[float] = Field(default=None, ge=0)
 
 
-class Refinery(EnergyShieldBaseModel):
+class Refinery(DigitalTwinEntityBase):
     """An Indian refinery fed by one or more import ports."""
-
-    entity_id: str
-    name: str
-    import_port_ids: list[str] = Field(default_factory=list)
-    coordinates: Coordinates | None = None
-    capacity_bpd: float | None = Field(default=None, ge=0)
-    owner_type: str = Field(default="public", description='"public" or "private"')
-    crude_grade_ids: list[str] = Field(
-        default_factory=list, description="Grades this refinery can process (simulated unless cited)."
-    )
-    is_simulated: bool = False
+    owner: str = Field(default="public")
+    capacity_bpd: Optional[float] = Field(default=None, ge=0)
+    connected_import_port_ids: List[str] = Field(default_factory=list)
+    accepted_crude_grade_ids: List[str] = Field(default_factory=list)
+    location_name: str
+    operational_status: str = "ONLINE"
+    estimated_flexibility_score: float = Field(default=0.5, ge=0.0, le=1.0)
 
 
-class StrategicReserveSite(EnergyShieldBaseModel):
+class StrategicReserveSite(DigitalTwinEntityBase):
     """A strategic petroleum reserve (SPR) storage site."""
-
-    entity_id: str
-    name: str
-    coordinates: Coordinates | None = None
-    capacity_mmbbl: float | None = Field(default=None, ge=0)
-    drawdown_rate_bpd: float | None = Field(default=None, ge=0)
-    supports_refinery_ids: list[str] = Field(default_factory=list)
-    is_simulated: bool = False
+    capacity_mmbbl: Optional[float] = Field(default=None, ge=0)
+    supported_refinery_ids: List[str] = Field(default_factory=list)
+    drawdown_priority: int = 1
 
 
-class CrudeGrade(EnergyShieldBaseModel):
+class CrudeGrade(DigitalTwinEntityBase):
     """A crude oil grade (e.g. Arab Light, WTI, Urals)."""
-
-    entity_id: str
-    name: str
-    api_gravity: float | None = None
-    sulfur_content_percent: float | None = Field(default=None, ge=0)
+    api_gravity: Optional[float] = None
+    sulfur_content_percent: Optional[float] = Field(default=None, ge=0)
 
 
-class DemandSector(EnergyShieldBaseModel):
-    """A downstream demand sector consuming a commodity (e.g. transport, power, petrochemical)."""
-
-    entity_id: str
-    name: str
-    commodity_type: CommodityType
-    demand_share_percent: float | None = Field(default=None, ge=0, le=100)
+class DemandSector(DigitalTwinEntityBase):
+    """A downstream demand sector consuming a commodity."""
+    demand_share_percent: Optional[float] = Field(default=None, ge=0, le=100)
