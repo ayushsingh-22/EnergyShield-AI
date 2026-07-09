@@ -27,11 +27,11 @@ EnergyShield AI converts fast-changing geopolitical, maritime, sanctions, commod
 
 ## Team Ownership
 
-| Role | Person | Core Responsibility |
-| --- | --- | --- |
-| Frontend and Backend Lead | Ayush Kumar | Frontend dashboard, backend APIs, database integration, report generation, deployment, user experience, and light AI integration |
-| ML and Agents Lead | Abhishek Choudhary | Event extraction, risk scoring, scenario modelling, ML evaluation, continuous learning, AI agents, explainability |
-| Data, Orchestration, and Knowledge Graph Lead | Mayur Raj | Data ingestion, schedulers, workflow orchestration, source freshness, knowledge graph construction, procurement orchestration, multi-commodity data adapters |
+| Role                                          | Person             | Core Responsibility                                                                                                                                          |
+| --------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend and Backend Lead                     | Ayush Kumar        | Frontend dashboard, backend APIs, database integration, report generation, deployment, user experience, and light AI integration                             |
+| ML and Agents Lead                            | Abhishek Choudhary | Event extraction, risk scoring, scenario modelling, ML evaluation, continuous learning, AI agents, explainability                                            |
+| Data, Orchestration, and Knowledge Graph Lead | Mayur Raj          | Data ingestion, schedulers, workflow orchestration, source freshness, knowledge graph construction, procurement orchestration, multi-commodity data adapters |
 
 ---
 
@@ -307,20 +307,20 @@ energyshield-ai/
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `README.md` | Ayush | Project overview, quick start, architecture summary |
-| `.env.example` | Ayush | Environment variables for API keys, database, graph DB, and scheduler |
-| `docker-compose.yml` | Ayush | Local development containers for backend, frontend, PostgreSQL, Neo4j, Redis |
-| `backend/models/core_schema.py` | Ayush | Shared base schemas and enums |
-| `backend/models/data_source_schema.py` | Mayur | Data source, source reliability, freshness, and raw record schemas |
-| `backend/models/event_schema.py` | Abhishek | Risk event and extraction schemas |
-| `backend/models/scenario_schema.py` | Abhishek | Scenario request and scenario output schemas |
-| `backend/models/recommendation_schema.py` | Mayur | Procurement and SPR recommendation schemas |
-| `docs/API_REFERENCE.md` | Ayush | Frozen API contract for frontend and backend integration |
-| `docs/SCENARIO_ASSUMPTIONS.md` | Abhishek | Explicit assumptions for all scenario templates |
-| `docs/DATA_SOURCE_PLAN.md` | Mayur | Data sources, refresh frequency, fallback strategy |
-| `docs/ARCHITECTURE.md` | Ayush | Full system architecture and component ownership |
+| File or Module                              | Owner    | Description                                                                  |
+| ------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| `README.md`                               | Ayush    | Project overview, quick start, architecture summary                          |
+| `.env.example`                            | Ayush    | Environment variables for API keys, database, graph DB, and scheduler        |
+| `docker-compose.yml`                      | Ayush    | Local development containers for backend, frontend, PostgreSQL, Neo4j, Redis |
+| `backend/models/core_schema.py`           | Ayush    | Shared base schemas and enums                                                |
+| `backend/models/data_source_schema.py`    | Mayur    | Data source, source reliability, freshness, and raw record schemas           |
+| `backend/models/event_schema.py`          | Abhishek | Risk event and extraction schemas                                            |
+| `backend/models/scenario_schema.py`       | Abhishek | Scenario request and scenario output schemas                                 |
+| `backend/models/recommendation_schema.py` | Mayur    | Procurement and SPR recommendation schemas                                   |
+| `docs/API_REFERENCE.md`                   | Ayush    | Frozen API contract for frontend and backend integration                     |
+| `docs/SCENARIO_ASSUMPTIONS.md`            | Abhishek | Explicit assumptions for all scenario templates                              |
+| `docs/DATA_SOURCE_PLAN.md`                | Mayur    | Data sources, refresh frequency, fallback strategy                           |
+| `docs/ARCHITECTURE.md`                    | Ayush    | Full system architecture and component ownership                             |
 
 ## Core Enums to Define
 
@@ -407,32 +407,32 @@ POST /api/v1/reports/generate
 
 ## Data Sources for MVP
 
-| Signal Type | Prototype Source | Update Frequency | Reliability Tier |
-| --- | --- | --- | --- |
-| Global news and geopolitical events | GDELT or configured RSS feeds | 15-30 minutes | Medium |
-| Maritime security alerts | UKMTO, MARAD, MSCIO, IMB or manually seeded alert samples | 15-30 minutes | Official or High |
-| Sanctions | OFAC, EU, UN lists or manually seeded snapshots | Daily | Official |
-| Oil prices | EIA or FRED daily Brent/WTI data | Daily | High |
-| Chokepoint and port activity | IMF PortWatch or seeded trend data | Weekly | High |
-| AIS vessel movement | AISStream or sample AIS files | Live or batch demo | Low to Medium |
-| India crude import baseline | PPAC, TradeStat, manually curated CSV | Monthly/manual | High or Simulated |
-| Geospatial layers | OSM, Natural Earth, manually curated GeoJSON | Static/manual | High |
+| Signal Type                         | Prototype Source                                          | Update Frequency   | Reliability Tier  |
+| ----------------------------------- | --------------------------------------------------------- | ------------------ | ----------------- |
+| Global news and geopolitical events | GDELT or configured RSS feeds                             | 15-30 minutes      | Medium            |
+| Maritime security alerts            | UKMTO, MARAD, MSCIO, IMB or manually seeded alert samples | 15-30 minutes      | Official or High  |
+| Sanctions                           | OFAC, EU, UN lists or manually seeded snapshots           | Daily              | Official          |
+| Oil prices                          | EIA or FRED daily Brent/WTI data                          | Daily              | High              |
+| Chokepoint and port activity        | IMF PortWatch or seeded trend data                        | Weekly             | High              |
+| AIS vessel movement                 | AISStream or sample AIS files                             | Live or batch demo | Low to Medium     |
+| India crude import baseline         | PPAC, TradeStat, manually curated CSV                     | Monthly/manual     | High or Simulated |
+| Geospatial layers                   | OSM, Natural Earth, manually curated GeoJSON              | Static/manual      | High              |
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/ingestion/source_registry.py` | Mayur | Central registry of source URLs, refresh intervals, reliability tiers |
-| `backend/ingestion/gdelt_collector.py` | Mayur | Collects news records from GDELT/RSS style sources |
-| `backend/ingestion/maritime_alert_collector.py` | Mayur | Collects or imports maritime advisory records |
-| `backend/ingestion/sanctions_collector.py` | Mayur | Downloads or imports sanctions list snapshots |
-| `backend/ingestion/commodity_price_collector.py` | Mayur | Pulls crude price time series or reads seeded price files |
-| `backend/ingestion/ais_collector.py` | Mayur | Reads AIS stream or sample AIS records for chokepoint monitoring |
-| `backend/ingestion/portwatch_collector.py` | Mayur | Reads chokepoint and port activity trends |
-| `backend/ingestion/import_baseline_collector.py` | Mayur | Loads India import share and baseline demand data |
-| `backend/ingestion/data_normalizer.py` | Mayur | Converts all raw data into common normalized schemas |
-| `backend/models/data_source_schema.py` | Mayur | Schemas for raw records, normalized records, source freshness |
-| `backend/api/routes/data_sources.py` | Ayush | Data freshness and source health endpoints |
+| File or Module                                     | Owner | Description                                                           |
+| -------------------------------------------------- | ----- | --------------------------------------------------------------------- |
+| `backend/ingestion/source_registry.py`           | Mayur | Central registry of source URLs, refresh intervals, reliability tiers |
+| `backend/ingestion/gdelt_collector.py`           | Mayur | Collects news records from GDELT/RSS style sources                    |
+| `backend/ingestion/maritime_alert_collector.py`  | Mayur | Collects or imports maritime advisory records                         |
+| `backend/ingestion/sanctions_collector.py`       | Mayur | Downloads or imports sanctions list snapshots                         |
+| `backend/ingestion/commodity_price_collector.py` | Mayur | Pulls crude price time series or reads seeded price files             |
+| `backend/ingestion/ais_collector.py`             | Mayur | Reads AIS stream or sample AIS records for chokepoint monitoring      |
+| `backend/ingestion/portwatch_collector.py`       | Mayur | Reads chokepoint and port activity trends                             |
+| `backend/ingestion/import_baseline_collector.py` | Mayur | Loads India import share and baseline demand data                     |
+| `backend/ingestion/data_normalizer.py`           | Mayur | Converts all raw data into common normalized schemas                  |
+| `backend/models/data_source_schema.py`           | Mayur | Schemas for raw records, normalized records, source freshness         |
+| `backend/api/routes/data_sources.py`             | Ayush | Data freshness and source health endpoints                            |
 
 ## Sequence
 
@@ -589,18 +589,18 @@ Phase 2 (Digital Twin) will consume NormalizedSignal objects directly from this 
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/models/digital_twin_schema.py` | Mayur | Pydantic schemas for suppliers, ports, routes, refineries, SPR sites |
-| `backend/services/digital_twin_service.py` | Mayur | Query and update digital twin entities |
-| `backend/api/routes/digital_twin.py` | Ayush | APIs for map layers and entity details |
-| `data/seeds/crude_suppliers.csv` | Mayur | Supplier country and region seed data |
-| `data/seeds/export_ports.csv` | Mayur | Export port seed data |
-| `data/seeds/import_ports.csv` | Mayur | Indian import port seed data |
-| `data/seeds/refineries.csv` | Mayur | Refinery location and capacity seed data |
-| `data/seeds/spr_sites.csv` | Mayur | Strategic reserve site seed data |
-| `data/seeds/chokepoints.geojson` | Mayur | Hormuz, Bab el-Mandeb, Suez, Cape route, Malacca if needed |
-| `data/seeds/routes.geojson` | Mayur | Approximate route geometries |
+| File or Module                               | Owner | Description                                                          |
+| -------------------------------------------- | ----- | -------------------------------------------------------------------- |
+| `backend/models/digital_twin_schema.py`    | Mayur | Pydantic schemas for suppliers, ports, routes, refineries, SPR sites |
+| `backend/services/digital_twin_service.py` | Mayur | Query and update digital twin entities                               |
+| `backend/api/routes/digital_twin.py`       | Ayush | APIs for map layers and entity details                               |
+| `data/seeds/crude_suppliers.csv`           | Mayur | Supplier country and region seed data                                |
+| `data/seeds/export_ports.csv`              | Mayur | Export port seed data                                                |
+| `data/seeds/import_ports.csv`              | Mayur | Indian import port seed data                                         |
+| `data/seeds/refineries.csv`                | Mayur | Refinery location and capacity seed data                             |
+| `data/seeds/spr_sites.csv`                 | Mayur | Strategic reserve site seed data                                     |
+| `data/seeds/chokepoints.geojson`           | Mayur | Hormuz, Bab el-Mandeb, Suez, Cape route, Malacca if needed           |
+| `data/seeds/routes.geojson`                | Mayur | Approximate route geometries                                         |
 
 ## Core Entities
 
@@ -758,18 +758,18 @@ Phase 3 will build Neo4j relationships using the Digital Twin entities created i
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/graph/schema.cypher` | Mayur | Neo4j node labels, relationship types, constraints, indexes |
-| `backend/graph/seed_graph.py` | Mayur | Loads digital twin seed data into graph DB |
-| `backend/graph/kg_client.py` | Mayur | Graph DB client wrapper |
-| `backend/graph/relationship_builder.py` | Mayur | Builds relationships from suppliers, routes, ports, refineries, events |
-| `backend/graph/graph_queries.py` | Mayur | Reusable graph query functions |
-| `backend/graph/risk_graph_updater.py` | Abhishek | Updates graph with risk scores and active events |
-| `backend/models/graph_schema.py` | Mayur | Pydantic schemas for graph nodes, edges, query results |
-| `backend/api/routes/graph.py` | Ayush | Graph query APIs for frontend and agents |
-| `docs/KNOWLEDGE_GRAPH_SCHEMA.md` | Mayur | Human-readable graph schema and query examples |
-| `frontend/src/pages/KnowledgeGraphExplorer.jsx` | Ayush | Optional graph explorer UI |
+| File or Module                                    | Owner    | Description                                                            |
+| ------------------------------------------------- | -------- | ---------------------------------------------------------------------- |
+| `backend/graph/schema.cypher`                   | Mayur    | Neo4j node labels, relationship types, constraints, indexes            |
+| `backend/graph/seed_graph.py`                   | Mayur    | Loads digital twin seed data into graph DB                             |
+| `backend/graph/kg_client.py`                    | Mayur    | Graph DB client wrapper                                                |
+| `backend/graph/relationship_builder.py`         | Mayur    | Builds relationships from suppliers, routes, ports, refineries, events |
+| `backend/graph/graph_queries.py`                | Mayur    | Reusable graph query functions                                         |
+| `backend/graph/risk_graph_updater.py`           | Abhishek | Updates graph with risk scores and active events                       |
+| `backend/models/graph_schema.py`                | Mayur    | Pydantic schemas for graph nodes, edges, query results                 |
+| `backend/api/routes/graph.py`                   | Ayush    | Graph query APIs for frontend and agents                               |
+| `docs/KNOWLEDGE_GRAPH_SCHEMA.md`                | Mayur    | Human-readable graph schema and query examples                         |
+| `frontend/src/pages/KnowledgeGraphExplorer.jsx` | Ayush    | Optional graph explorer UI                                             |
 
 ## Graph Ontology
 
@@ -895,11 +895,65 @@ POST /api/v1/graph/query-impact
 
 ## Phase 3 Validation
 
-- [ ] Query can identify all refineries exposed to a chosen chokepoint.
-- [ ] Query can produce alternative suppliers for a disrupted supplier.
-- [ ] New risk events create `AFFECTS` edges in the graph.
-- [ ] Scenario engine can use graph queries instead of hardcoded relationships.
-- [ ] Frontend can display at least one graph-driven exposure view.
+- [x] Query can identify all refineries exposed to a chosen chokepoint.
+- [x] Query can produce alternative suppliers for a disrupted supplier.
+- [x] New risk events create `AFFECTS` edges in the graph.
+- [ ] Scenario engine can use graph queries instead of hardcoded relationships. (Blocked on Phase 6 - scenario engine doesn't exist yet.)
+- [ ] Frontend can display at least one graph-driven exposure view. (Deferred to Phase 9 per the "Optional" note on `KnowledgeGraphExplorer.jsx`.)
+
+## Phase 3 Completion Status
+
+Status:
+✅ Completed (backend graph layer). Frontend explorer and Phase 5/6 integration remain future work as noted above.
+
+Completion Date:
+2026-07-09
+
+Implementation Summary
+
+List every completed module:
+
+✓ backend/graph/schema.cypher (already present from initial scaffolding - constraints/indexes verified against the Phase 3 ontology)
+✓ backend/graph/kg_client.py
+✓ backend/graph/seed_graph.py
+✓ backend/graph/relationship_builder.py
+✓ backend/graph/graph_queries.py
+✓ backend/models/graph_schema.py (added `ImpactQueryRequest`)
+✓ backend/api/routes/graph.py
+✓ backend/main.py (wired `graph`, `data_sources`, `digital_twin` routers - the latter two were implemented in Phase 1/2 but never registered)
+✓ backend/tests/graph/test_graph_queries.py
+✓ backend/tests/graph/test_relationship_builder.py
+✓ backend/tests/graph/test_seed_graph.py
+✓ backend/tests/api/test_graph.py
+✓ docs/API_REFERENCE.md (Knowledge Graph section flipped to Live; also fixed stale Planned status on already-shipped Digital Twin and `/data/freshness` rows)
+
+New Features Added
+
+• Neo4j client wrapper with graceful degradation (queries return `[]` and log a warning instead of crashing when Neo4j is unreachable, matching the ingestion `BaseCollector` contract)
+• Idempotent MERGE-based graph seeding from the Phase 2 `DigitalTwinService` (suppliers, ports, routes, chokepoints, refineries, SPR sites, commodities)
+• Route origin/destination validation warnings during seeding (logged, not fatal)
+• RiskEvent -> `AFFECTS` edge creation and expiry (edges are marked `expired_at` rather than deleted, preserving history for Phase 13 continuous learning)
+• The 5 required reusable query functions plus generic entity-neighborhood and bounded-hop impact-traversal queries
+• 5 knowledge graph API endpoints per the frozen contract
+
+Architecture Improvements
+
+The knowledge graph is now the relationship layer described in Planning
+Principle #6: risk scoring, scenario modelling, and procurement
+recommendation can query `backend/graph/graph_queries.py` instead of
+hardcoding which refineries/suppliers/routes are connected to what.
+
+Lessons Learned
+
+- why every graph write uses MERGE instead of CREATE: re-running the seed loader against an already-seeded database must update properties, not duplicate nodes/edges - this keeps seeding safe to run repeatedly during development and in CI.
+- why AFFECTS edges are expired instead of deleted: Phase 13's continuous-learning track needs the historical record of what an event affected, even after the event resolves.
+- why `kg_client.run_query` swallows exceptions and returns `[]`: an unreachable graph database must degrade the API (empty results) rather than crash it, mirroring how ingestion collectors already treat unreachable external sources.
+- why the graph-explorer frontend page and risk-graph-updater module were left untouched: they depend on Phase 9 (frontend integration) and Phase 5 (risk scores) respectively, which don't exist yet - their stubs already say as much.
+- Testing caveat: this sandbox has no Python packages installed (no `pip`/`poetry` available) and no running Neo4j instance, so these modules were verified by syntax-checking (`py_compile`) and by unit tests against a mocked `KGClient`, not by executing against a live graph. Run `poetry install && docker compose up neo4j && pytest backend/tests/graph backend/tests/api/test_graph.py` in a real environment to confirm end-to-end.
+
+Future Integration
+
+Phase 4's event extraction agent will call `relationship_builder.upsert_event_relationships` for every extracted event. Phase 5's risk scoring engine will populate `backend/graph/risk_graph_updater.py` (still a stub) and read `graph_queries` for exposure. Phase 6/7 will call the alternative-supplier and SPR queries directly instead of hardcoding relationships.
 
 ---
 
@@ -921,15 +975,15 @@ POST /api/v1/graph/query-impact
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/agents/event_extraction_agent.py` | Abhishek | Main extraction pipeline for structured risk events |
+| File or Module                                | Owner    | Description                                                                |
+| --------------------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `backend/agents/event_extraction_agent.py`  | Abhishek | Main extraction pipeline for structured risk events                        |
 | `backend/agents/entity_resolution_agent.py` | Abhishek | Links event text to supplier, route, chokepoint, port, refinery, commodity |
-| `backend/ml/event_classifier.py` | Abhishek | Rule-based or ML event classifier |
-| `backend/services/event_service.py` | Abhishek | Event persistence and retrieval logic |
-| `backend/models/event_schema.py` | Abhishek | `RiskEvent`, `EventEvidence`, `ExtractionResult` schemas |
-| `backend/api/routes/events.py` | Ayush | Latest event feed and event detail APIs |
-| `prompts/risk_event_extraction.md` | Abhishek | LLM prompt for structured extraction |
+| `backend/ml/event_classifier.py`            | Abhishek | Rule-based or ML event classifier                                          |
+| `backend/services/event_service.py`         | Abhishek | Event persistence and retrieval logic                                      |
+| `backend/models/event_schema.py`            | Abhishek | `RiskEvent`, `EventEvidence`, `ExtractionResult` schemas             |
+| `backend/api/routes/events.py`              | Ayush    | Latest event feed and event detail APIs                                    |
+| `prompts/risk_event_extraction.md`          | Abhishek | LLM prompt for structured extraction                                       |
 
 ## Risk Event Output Schema
 
@@ -1032,15 +1086,15 @@ POST /api/v1/graph/query-impact
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/risk/risk_scoring_engine.py` | Abhishek | Main risk score computation |
-| `backend/risk/exposure_model.py` | Abhishek | India exposure and refinery exposure calculations |
-| `backend/risk/reliability_model.py` | Abhishek | Source reliability and corroboration weighting |
-| `backend/risk/anomaly_model.py` | Abhishek | AIS and price anomaly features |
-| `backend/services/risk_service.py` | Abhishek | Stores and retrieves risk scores |
-| `backend/graph/risk_graph_updater.py` | Abhishek | Updates graph with latest risk scores |
-| `backend/api/routes/risk.py` | Ayush | Risk card and risk history APIs |
+| File or Module                          | Owner    | Description                                       |
+| --------------------------------------- | -------- | ------------------------------------------------- |
+| `backend/risk/risk_scoring_engine.py` | Abhishek | Main risk score computation                       |
+| `backend/risk/exposure_model.py`      | Abhishek | India exposure and refinery exposure calculations |
+| `backend/risk/reliability_model.py`   | Abhishek | Source reliability and corroboration weighting    |
+| `backend/risk/anomaly_model.py`       | Abhishek | AIS and price anomaly features                    |
+| `backend/services/risk_service.py`    | Abhishek | Stores and retrieves risk scores                  |
+| `backend/graph/risk_graph_updater.py` | Abhishek | Updates graph with latest risk scores             |
+| `backend/api/routes/risk.py`          | Ayush    | Risk card and risk history APIs                   |
 
 ## Initial Risk Formula
 
@@ -1150,24 +1204,24 @@ Risk Score =
 
 ## MVP Scenarios
 
-| Scenario | Scenario ID | Main Impact |
-| --- | --- | --- |
-| Strait of Hormuz partial closure | `HORMUZ_PARTIAL_CLOSURE` | Middle East supply exposure, delays, price pressure |
-| Red Sea shipping disruption | `RED_SEA_SHIPPING_DISRUPTION` | Suez route delay, Cape rerouting, freight cost increase |
-| OPEC+ emergency supply cut | `OPEC_SUPPLY_CUT` | Supplier availability reduction, spot price pressure |
-| Sanctions shock | `SANCTIONS_SHOCK` | Supplier feasibility and payment/logistics risk |
-| Indian import port congestion | `PORT_CONGESTION` | Arrival delays and refinery run-rate risk |
+| Scenario                         | Scenario ID                     | Main Impact                                             |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------- |
+| Strait of Hormuz partial closure | `HORMUZ_PARTIAL_CLOSURE`      | Middle East supply exposure, delays, price pressure     |
+| Red Sea shipping disruption      | `RED_SEA_SHIPPING_DISRUPTION` | Suez route delay, Cape rerouting, freight cost increase |
+| OPEC+ emergency supply cut       | `OPEC_SUPPLY_CUT`             | Supplier availability reduction, spot price pressure    |
+| Sanctions shock                  | `SANCTIONS_SHOCK`             | Supplier feasibility and payment/logistics risk         |
+| Indian import port congestion    | `PORT_CONGESTION`             | Arrival delays and refinery run-rate risk               |
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/scenarios/scenario_engine.py` | Abhishek | Main scenario execution engine |
-| `backend/scenarios/impact_model.py` | Abhishek | Calculates supply gap, delays, cost impact, refinery exposure |
-| `backend/scenarios/templates/*.yaml` | Abhishek | Scenario assumptions and parameters |
-| `backend/services/scenario_service.py` | Abhishek | Scenario persistence and retrieval |
-| `backend/api/routes/scenarios.py` | Ayush | Scenario run and history APIs |
-| `docs/SCENARIO_ASSUMPTIONS.md` | Abhishek | Explanation of assumptions and limitations |
+| File or Module                           | Owner    | Description                                                   |
+| ---------------------------------------- | -------- | ------------------------------------------------------------- |
+| `backend/scenarios/scenario_engine.py` | Abhishek | Main scenario execution engine                                |
+| `backend/scenarios/impact_model.py`    | Abhishek | Calculates supply gap, delays, cost impact, refinery exposure |
+| `backend/scenarios/templates/*.yaml`   | Abhishek | Scenario assumptions and parameters                           |
+| `backend/services/scenario_service.py` | Abhishek | Scenario persistence and retrieval                            |
+| `backend/api/routes/scenarios.py`      | Ayush    | Scenario run and history APIs                                 |
+| `docs/SCENARIO_ASSUMPTIONS.md`         | Abhishek | Explanation of assumptions and limitations                    |
 
 ## Scenario Request Schema
 
@@ -1277,15 +1331,15 @@ Risk Score =
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/optimization/procurement_optimizer.py` | Mayur | Ranks procurement alternatives |
-| `backend/optimization/route_ranker.py` | Mayur | Scores route options by cost, delay, risk, feasibility |
-| `backend/optimization/spr_optimizer.py` | Abhishek | Suggests reserve drawdown schedules |
-| `backend/agents/procurement_agent.py` | Mayur | Agent wrapper for procurement recommendations |
-| `backend/agents/spr_agent.py` | Abhishek | Agent wrapper for SPR recommendations |
-| `backend/services/recommendation_service.py` | Mayur | Stores and retrieves recommendation outputs |
-| `backend/api/routes/recommendations.py` | Ayush | Recommendation APIs |
+| File or Module                                    | Owner    | Description                                            |
+| ------------------------------------------------- | -------- | ------------------------------------------------------ |
+| `backend/optimization/procurement_optimizer.py` | Mayur    | Ranks procurement alternatives                         |
+| `backend/optimization/route_ranker.py`          | Mayur    | Scores route options by cost, delay, risk, feasibility |
+| `backend/optimization/spr_optimizer.py`         | Abhishek | Suggests reserve drawdown schedules                    |
+| `backend/agents/procurement_agent.py`           | Mayur    | Agent wrapper for procurement recommendations          |
+| `backend/agents/spr_agent.py`                   | Abhishek | Agent wrapper for SPR recommendations                  |
+| `backend/services/recommendation_service.py`    | Mayur    | Stores and retrieves recommendation outputs            |
+| `backend/api/routes/recommendations.py`         | Ayush    | Recommendation APIs                                    |
 
 ## Procurement Scoring Formula
 
@@ -1402,16 +1456,16 @@ Option Score =
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/main.py` | Ayush | FastAPI app entry point |
-| `backend/db/session.py` | Ayush | Database session and connection handling |
-| `backend/db/migrations/` | Ayush | Database migrations |
-| `backend/storage/repository.py` | Ayush | Persistence abstraction for relational DB |
-| `backend/services/audit_service.py` | Ayush | Immutable audit event recording |
-| `backend/api/routes/*.py` | Ayush | API route modules |
-| `backend/reports/report_builder.py` | Ayush | Crisis-response report generation |
-| `backend/tests/api/` | Ayush | API contract tests |
+| File or Module                        | Owner | Description                               |
+| ------------------------------------- | ----- | ----------------------------------------- |
+| `backend/main.py`                   | Ayush | FastAPI app entry point                   |
+| `backend/db/session.py`             | Ayush | Database session and connection handling  |
+| `backend/db/migrations/`            | Ayush | Database migrations                       |
+| `backend/storage/repository.py`     | Ayush | Persistence abstraction for relational DB |
+| `backend/services/audit_service.py` | Ayush | Immutable audit event recording           |
+| `backend/api/routes/*.py`           | Ayush | API route modules                         |
+| `backend/reports/report_builder.py` | Ayush | Crisis-response report generation         |
+| `backend/tests/api/`                | Ayush | API contract tests                        |
 
 ## API Endpoints
 
@@ -1495,22 +1549,22 @@ GET  /api/v1/audit/{entity_id}
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `frontend/src/pages/Dashboard.jsx` | Ayush | Main command center overview |
-| `frontend/src/pages/RiskMonitor.jsx` | Ayush | Corridor and supplier risk cards |
-| `frontend/src/pages/EnergyMap.jsx` | Ayush | Geospatial digital twin map |
-| `frontend/src/pages/ScenarioSimulator.jsx` | Ayush | Scenario input and results UI |
-| `frontend/src/pages/RecommendationCenter.jsx` | Ayush | Procurement and SPR recommendations |
-| `frontend/src/pages/KnowledgeGraphExplorer.jsx` | Ayush | Graph relationship explorer |
-| `frontend/src/pages/LearningCenter.jsx` | Ayush | Continuous learning and model version UI |
-| `frontend/src/pages/CommodityCommandCenter.jsx` | Ayush | Multi-commodity expansion UI |
-| `frontend/src/components/maps/SupplyRouteMap.jsx` | Ayush | Map visualization component |
-| `frontend/src/components/risk/RiskScoreCard.jsx` | Ayush | Risk score cards |
-| `frontend/src/components/scenarios/ScenarioResultPanel.jsx` | Ayush | Scenario outputs |
-| `frontend/src/components/recommendations/RecommendationTable.jsx` | Ayush | Ranked recommendations |
-| `frontend/src/api/energyShieldApi.js` | Ayush | API client |
-| `frontend/src/api/mockData.js` | Ayush | Mock responses matching backend schemas |
+| File or Module                                                      | Owner | Description                              |
+| ------------------------------------------------------------------- | ----- | ---------------------------------------- |
+| `frontend/src/pages/Dashboard.jsx`                                | Ayush | Main command center overview             |
+| `frontend/src/pages/RiskMonitor.jsx`                              | Ayush | Corridor and supplier risk cards         |
+| `frontend/src/pages/EnergyMap.jsx`                                | Ayush | Geospatial digital twin map              |
+| `frontend/src/pages/ScenarioSimulator.jsx`                        | Ayush | Scenario input and results UI            |
+| `frontend/src/pages/RecommendationCenter.jsx`                     | Ayush | Procurement and SPR recommendations      |
+| `frontend/src/pages/KnowledgeGraphExplorer.jsx`                   | Ayush | Graph relationship explorer              |
+| `frontend/src/pages/LearningCenter.jsx`                           | Ayush | Continuous learning and model version UI |
+| `frontend/src/pages/CommodityCommandCenter.jsx`                   | Ayush | Multi-commodity expansion UI             |
+| `frontend/src/components/maps/SupplyRouteMap.jsx`                 | Ayush | Map visualization component              |
+| `frontend/src/components/risk/RiskScoreCard.jsx`                  | Ayush | Risk score cards                         |
+| `frontend/src/components/scenarios/ScenarioResultPanel.jsx`       | Ayush | Scenario outputs                         |
+| `frontend/src/components/recommendations/RecommendationTable.jsx` | Ayush | Ranked recommendations                   |
+| `frontend/src/api/energyShieldApi.js`                             | Ayush | API client                               |
+| `frontend/src/api/mockData.js`                                    | Ayush | Mock responses matching backend schemas  |
 
 ## Main Screens
 
@@ -1589,15 +1643,15 @@ Supplier -> Export Port -> Route -> Chokepoint -> Import Port -> Refinery
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/orchestration/scheduler.py` | Mayur | Scheduled jobs for data refresh |
-| `backend/orchestration/workflows.py` | Mayur | End-to-end pipeline definitions |
-| `backend/orchestration/event_bus.py` | Mayur | Lightweight event bus or Redis stream wrapper |
-| `backend/orchestration/job_status.py` | Mayur | Job status tracking |
-| `backend/workers/risk_worker.py` | Mayur | Background risk scoring jobs |
-| `backend/workers/scenario_worker.py` | Mayur | Scenario trigger jobs |
-| `backend/workers/recommendation_worker.py` | Mayur | Recommendation generation jobs |
+| File or Module                               | Owner | Description                                   |
+| -------------------------------------------- | ----- | --------------------------------------------- |
+| `backend/orchestration/scheduler.py`       | Mayur | Scheduled jobs for data refresh               |
+| `backend/orchestration/workflows.py`       | Mayur | End-to-end pipeline definitions               |
+| `backend/orchestration/event_bus.py`       | Mayur | Lightweight event bus or Redis stream wrapper |
+| `backend/orchestration/job_status.py`      | Mayur | Job status tracking                           |
+| `backend/workers/risk_worker.py`           | Mayur | Background risk scoring jobs                  |
+| `backend/workers/scenario_worker.py`       | Mayur | Scenario trigger jobs                         |
+| `backend/workers/recommendation_worker.py` | Mayur | Recommendation generation jobs                |
 
 ## Main Workflow
 
@@ -1680,29 +1734,29 @@ Data collector runs
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/services/audit_service.py` | Ayush | Audit event storage and retrieval |
-| `backend/services/explainer_service.py` | Abhishek | Explanation generation for risk and recommendations |
-| `backend/evaluation/event_extraction_eval.py` | Abhishek | Event extraction precision checks on seeded data |
-| `backend/evaluation/scenario_eval.py` | Abhishek | Scenario assumption and output validation |
-| `backend/evaluation/recommendation_eval.py` | Abhishek | Recommendation quality checks |
-| `backend/evaluation/backtest_metrics.py` | Abhishek | Shared metric utilities |
-| `frontend/src/components/reports/AuditLogTable.jsx` | Ayush | UI for audit trail |
-| `frontend/src/components/risk/ExplainabilityPanel.jsx` | Ayush | UI showing top drivers and evidence |
+| File or Module                                           | Owner    | Description                                         |
+| -------------------------------------------------------- | -------- | --------------------------------------------------- |
+| `backend/services/audit_service.py`                    | Ayush    | Audit event storage and retrieval                   |
+| `backend/services/explainer_service.py`                | Abhishek | Explanation generation for risk and recommendations |
+| `backend/evaluation/event_extraction_eval.py`          | Abhishek | Event extraction precision checks on seeded data    |
+| `backend/evaluation/scenario_eval.py`                  | Abhishek | Scenario assumption and output validation           |
+| `backend/evaluation/recommendation_eval.py`            | Abhishek | Recommendation quality checks                       |
+| `backend/evaluation/backtest_metrics.py`               | Abhishek | Shared metric utilities                             |
+| `frontend/src/components/reports/AuditLogTable.jsx`    | Ayush    | UI for audit trail                                  |
+| `frontend/src/components/risk/ExplainabilityPanel.jsx` | Ayush    | UI showing top drivers and evidence                 |
 
 ## Evaluation Metrics
 
-| Metric | How to Measure |
-| --- | --- |
-| Signal detection lead time | `detected_at - published_at` |
-| Event extraction accuracy | Correct event type, location, commodity, and affected entity on labelled samples |
-| Risk score explainability | Percentage of scores with top drivers and evidence events |
-| Scenario fidelity | All assumptions explicit and testable |
-| Recommendation quality | Each recommendation includes cost, risk, delay, feasibility, and confidence |
-| Geospatial evidence depth | Affected route/chokepoint/refinery visible on map |
-| End-to-end response time | Time from signal ingestion to recommendation generated |
-| Auditability | Every event, scenario, recommendation, and override has audit entry |
+| Metric                     | How to Measure                                                                   |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| Signal detection lead time | `detected_at - published_at`                                                   |
+| Event extraction accuracy  | Correct event type, location, commodity, and affected entity on labelled samples |
+| Risk score explainability  | Percentage of scores with top drivers and evidence events                        |
+| Scenario fidelity          | All assumptions explicit and testable                                            |
+| Recommendation quality     | Each recommendation includes cost, risk, delay, feasibility, and confidence      |
+| Geospatial evidence depth  | Affected route/chokepoint/refinery visible on map                                |
+| End-to-end response time   | Time from signal ingestion to recommendation generated                           |
+| Auditability               | Every event, scenario, recommendation, and override has audit entry              |
 
 ## Audit Event Schema
 
@@ -1749,15 +1803,15 @@ Data collector runs
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `docker-compose.yml` | Ayush | Full-stack local setup |
-| `deploy/` | Ayush | Deployment config |
-| `docs/DEMO_SCRIPT.md` | Ayush | Step-by-step demo storyline |
-| `docs/ARCHITECTURE.md` | Ayush | Final architecture diagram and explanation |
-| `README.md` | Ayush | Setup, usage, data caveats, demo instructions |
-| `frontend/.env.example` | Ayush | Frontend environment variables |
-| `backend/tests/e2e/` | Ayush | End-to-end tests |
+| File or Module            | Owner | Description                                   |
+| ------------------------- | ----- | --------------------------------------------- |
+| `docker-compose.yml`    | Ayush | Full-stack local setup                        |
+| `deploy/`               | Ayush | Deployment config                             |
+| `docs/DEMO_SCRIPT.md`   | Ayush | Step-by-step demo storyline                   |
+| `docs/ARCHITECTURE.md`  | Ayush | Final architecture diagram and explanation    |
+| `README.md`             | Ayush | Setup, usage, data caveats, demo instructions |
+| `frontend/.env.example` | Ayush | Frontend environment variables                |
+| `backend/tests/e2e/`    | Ayush | End-to-end tests                              |
 
 ## Recommended Demo Flow
 
@@ -1805,19 +1859,19 @@ Data collector runs
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/learning/disruption_case_library.py` | Abhishek | Stores curated historical disruption cases |
-| `backend/learning/feature_store.py` | Abhishek | Stores features used by risk and scenario models |
-| `backend/learning/label_builder.py` | Abhishek | Converts historical outcomes into labels |
-| `backend/learning/model_trainer.py` | Abhishek | Trains or calibrates risk models and thresholds |
-| `backend/learning/backtesting.py` | Abhishek | Runs past disruptions through old and new models |
-| `backend/learning/feedback_service.py` | Abhishek | Captures analyst feedback on recommendations |
-| `backend/learning/model_registry.py` | Abhishek | Tracks model versions, metrics, and deployment status |
-| `backend/models/learning_schema.py` | Abhishek | Pydantic schemas for cases, labels, feedback, model versions |
-| `backend/api/routes/learning.py` | Ayush | Learning, feedback, and model version APIs |
-| `frontend/src/pages/LearningCenter.jsx` | Ayush | UI for model versions, backtests, and feedback history |
-| `docs/CONTINUOUS_LEARNING.md` | Abhishek | Learning strategy, metrics, and governance |
+| File or Module                                  | Owner    | Description                                                  |
+| ----------------------------------------------- | -------- | ------------------------------------------------------------ |
+| `backend/learning/disruption_case_library.py` | Abhishek | Stores curated historical disruption cases                   |
+| `backend/learning/feature_store.py`           | Abhishek | Stores features used by risk and scenario models             |
+| `backend/learning/label_builder.py`           | Abhishek | Converts historical outcomes into labels                     |
+| `backend/learning/model_trainer.py`           | Abhishek | Trains or calibrates risk models and thresholds              |
+| `backend/learning/backtesting.py`             | Abhishek | Runs past disruptions through old and new models             |
+| `backend/learning/feedback_service.py`        | Abhishek | Captures analyst feedback on recommendations                 |
+| `backend/learning/model_registry.py`          | Abhishek | Tracks model versions, metrics, and deployment status        |
+| `backend/models/learning_schema.py`           | Abhishek | Pydantic schemas for cases, labels, feedback, model versions |
+| `backend/api/routes/learning.py`              | Ayush    | Learning, feedback, and model version APIs                   |
+| `frontend/src/pages/LearningCenter.jsx`       | Ayush    | UI for model versions, backtests, and feedback history       |
+| `docs/CONTINUOUS_LEARNING.md`                 | Abhishek | Learning strategy, metrics, and governance                   |
 
 ## Historical Case Schema
 
@@ -1965,33 +2019,33 @@ POST /api/v1/learning/models/{model_id}/activate
 
 ## Target Commodities
 
-| Commodity | Why It Matters | Key Risks to Model |
-| --- | --- | --- |
-| LNG | Energy security, power, city gas, fertilizer feedstock | Export terminal outage, shipping delay, spot price spike, regas terminal congestion |
-| Coal | Power generation and industrial energy supply | Port disruption, rail bottleneck, weather impact, export restrictions, quality mismatch |
-| Fertilizers | Agriculture and food security | Natural gas feedstock shock, urea/DAP/MOP import disruption, seasonal demand surge |
-| Critical minerals | EVs, batteries, electronics, defense manufacturing | Export controls, supplier concentration, geopolitical restrictions, processing bottlenecks |
+| Commodity         | Why It Matters                                         | Key Risks to Model                                                                         |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| LNG               | Energy security, power, city gas, fertilizer feedstock | Export terminal outage, shipping delay, spot price spike, regas terminal congestion        |
+| Coal              | Power generation and industrial energy supply          | Port disruption, rail bottleneck, weather impact, export restrictions, quality mismatch    |
+| Fertilizers       | Agriculture and food security                          | Natural gas feedstock shock, urea/DAP/MOP import disruption, seasonal demand surge         |
+| Critical minerals | EVs, batteries, electronics, defense manufacturing     | Export controls, supplier concentration, geopolitical restrictions, processing bottlenecks |
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `backend/models/commodity_schema.py` | Mayur | Generic commodity, grade, demand sector, and supply chain schemas |
-| `backend/commodities/base_adapter.py` | Mayur | Base adapter interface for all commodities |
-| `backend/commodities/crude_oil_adapter.py` | Mayur | Existing crude MVP adapter |
-| `backend/commodities/lng_adapter.py` | Mayur | LNG supply chain adapter |
-| `backend/commodities/coal_adapter.py` | Mayur | Coal supply chain adapter |
-| `backend/commodities/fertilizer_adapter.py` | Mayur | Fertilizer supply chain adapter |
-| `backend/commodities/critical_minerals_adapter.py` | Mayur | Critical minerals adapter |
-| `backend/scenarios/templates/lng_supply_shock.yaml` | Abhishek | LNG disruption scenario template |
-| `backend/scenarios/templates/coal_import_disruption.yaml` | Abhishek | Coal disruption scenario template |
-| `backend/scenarios/templates/fertilizer_feedstock_shock.yaml` | Abhishek | Fertilizer disruption scenario template |
-| `backend/scenarios/templates/critical_mineral_export_restriction.yaml` | Abhishek | Critical mineral scenario template |
-| `data/seeds/commodity_definitions.yaml` | Mayur | Commodity-specific definitions and risk parameters |
-| `backend/api/routes/commodities.py` | Ayush | Commodity selection and commodity metadata APIs |
-| `frontend/src/pages/CommodityCommandCenter.jsx` | Ayush | Multi-commodity dashboard UI |
-| `frontend/src/components/commodities/CommoditySelector.jsx` | Ayush | Commodity selection component |
-| `docs/MULTI_COMMODITY_ROADMAP.md` | Mayur | Commodity-by-commodity expansion plan |
+| File or Module                                                           | Owner    | Description                                                       |
+| ------------------------------------------------------------------------ | -------- | ----------------------------------------------------------------- |
+| `backend/models/commodity_schema.py`                                   | Mayur    | Generic commodity, grade, demand sector, and supply chain schemas |
+| `backend/commodities/base_adapter.py`                                  | Mayur    | Base adapter interface for all commodities                        |
+| `backend/commodities/crude_oil_adapter.py`                             | Mayur    | Existing crude MVP adapter                                        |
+| `backend/commodities/lng_adapter.py`                                   | Mayur    | LNG supply chain adapter                                          |
+| `backend/commodities/coal_adapter.py`                                  | Mayur    | Coal supply chain adapter                                         |
+| `backend/commodities/fertilizer_adapter.py`                            | Mayur    | Fertilizer supply chain adapter                                   |
+| `backend/commodities/critical_minerals_adapter.py`                     | Mayur    | Critical minerals adapter                                         |
+| `backend/scenarios/templates/lng_supply_shock.yaml`                    | Abhishek | LNG disruption scenario template                                  |
+| `backend/scenarios/templates/coal_import_disruption.yaml`              | Abhishek | Coal disruption scenario template                                 |
+| `backend/scenarios/templates/fertilizer_feedstock_shock.yaml`          | Abhishek | Fertilizer disruption scenario template                           |
+| `backend/scenarios/templates/critical_mineral_export_restriction.yaml` | Abhishek | Critical mineral scenario template                                |
+| `data/seeds/commodity_definitions.yaml`                                | Mayur    | Commodity-specific definitions and risk parameters                |
+| `backend/api/routes/commodities.py`                                    | Ayush    | Commodity selection and commodity metadata APIs                   |
+| `frontend/src/pages/CommodityCommandCenter.jsx`                        | Ayush    | Multi-commodity dashboard UI                                      |
+| `frontend/src/components/commodities/CommoditySelector.jsx`            | Ayush    | Commodity selection component                                     |
+| `docs/MULTI_COMMODITY_ROADMAP.md`                                      | Mayur    | Commodity-by-commodity expansion plan                             |
 
 ## Commodity Adapter Interface
 
@@ -2183,16 +2237,16 @@ GET  /api/v1/commodities/{commodity_type}/recommendations/{scenario_id}
 
 ## Deliverables
 
-| File or Module | Owner | Description |
-| --- | --- | --- |
-| `docs/DEMO_SCRIPT.md` | Ayush | 3-5 minute demo script |
-| `docs/ARCHITECTURE.md` | Ayush | Final architecture and component diagram |
-| `docs/DATA_SOURCE_PLAN.md` | Mayur | Free and paid data source strategy |
-| `docs/SCENARIO_ASSUMPTIONS.md` | Abhishek | Scenario assumptions and limitations |
-| `docs/CONTINUOUS_LEARNING.md` | Abhishek | Learning roadmap and model governance |
-| `docs/MULTI_COMMODITY_ROADMAP.md` | Mayur | Expansion path to LNG, coal, fertilizer, critical minerals |
-| `README.md` | Ayush | Final public project documentation |
-| `presentation/` | All | Slides, screenshots, and demo assets |
+| File or Module                      | Owner    | Description                                                |
+| ----------------------------------- | -------- | ---------------------------------------------------------- |
+| `docs/DEMO_SCRIPT.md`             | Ayush    | 3-5 minute demo script                                     |
+| `docs/ARCHITECTURE.md`            | Ayush    | Final architecture and component diagram                   |
+| `docs/DATA_SOURCE_PLAN.md`        | Mayur    | Free and paid data source strategy                         |
+| `docs/SCENARIO_ASSUMPTIONS.md`    | Abhishek | Scenario assumptions and limitations                       |
+| `docs/CONTINUOUS_LEARNING.md`     | Abhishek | Learning roadmap and model governance                      |
+| `docs/MULTI_COMMODITY_ROADMAP.md` | Mayur    | Expansion path to LNG, coal, fertilizer, critical minerals |
+| `README.md`                       | Ayush    | Final public project documentation                         |
+| `presentation/`                   | All      | Slides, screenshots, and demo assets                       |
 
 ## Resume-Ready Description
 
@@ -2236,29 +2290,29 @@ If the team starts implementation immediately, build in this order:
 
 ## Responsibility Matrix
 
-| Area | Primary Owner | Secondary Support |
-| --- | --- | --- |
-| Frontend dashboard | Ayush Kumar | Mayur Raj, Abhishek Choudhary |
-| Backend APIs | Ayush Kumar | Mayur Raj |
-| Database and persistence | Ayush Kumar | Mayur Raj |
-| Data source registry | Mayur Raj | Ayush Kumar |
-| Data collectors | Mayur Raj | Abhishek Choudhary |
-| Data orchestration | Mayur Raj | Ayush Kumar |
-| Digital twin seed data | Mayur Raj | Ayush Kumar |
-| Knowledge graph schema | Mayur Raj | Abhishek Choudhary |
-| Knowledge graph queries | Mayur Raj | Ayush Kumar |
-| Event extraction agent | Abhishek Choudhary | Mayur Raj |
-| Entity resolution | Abhishek Choudhary | Mayur Raj |
-| Risk scoring model | Abhishek Choudhary | Mayur Raj |
-| Scenario simulation | Abhishek Choudhary | Mayur Raj |
-| Procurement recommendation | Mayur Raj | Abhishek Choudhary |
-| SPR optimization | Abhishek Choudhary | Mayur Raj |
-| End-to-end workflow orchestration | Mayur Raj | Ayush Kumar, Abhishek Choudhary |
-| Explainability and evaluation | Abhishek Choudhary | Ayush Kumar |
-| Continuous learning | Abhishek Choudhary | Mayur Raj |
-| Multi-commodity adapters | Mayur Raj | Abhishek Choudhary, Ayush Kumar |
-| Deployment | Ayush Kumar | Mayur Raj |
-| Demo and presentation | Ayush Kumar | Abhishek Choudhary, Mayur Raj |
+| Area                              | Primary Owner      | Secondary Support               |
+| --------------------------------- | ------------------ | ------------------------------- |
+| Frontend dashboard                | Ayush Kumar        | Mayur Raj, Abhishek Choudhary   |
+| Backend APIs                      | Ayush Kumar        | Mayur Raj                       |
+| Database and persistence          | Ayush Kumar        | Mayur Raj                       |
+| Data source registry              | Mayur Raj          | Ayush Kumar                     |
+| Data collectors                   | Mayur Raj          | Abhishek Choudhary              |
+| Data orchestration                | Mayur Raj          | Ayush Kumar                     |
+| Digital twin seed data            | Mayur Raj          | Ayush Kumar                     |
+| Knowledge graph schema            | Mayur Raj          | Abhishek Choudhary              |
+| Knowledge graph queries           | Mayur Raj          | Ayush Kumar                     |
+| Event extraction agent            | Abhishek Choudhary | Mayur Raj                       |
+| Entity resolution                 | Abhishek Choudhary | Mayur Raj                       |
+| Risk scoring model                | Abhishek Choudhary | Mayur Raj                       |
+| Scenario simulation               | Abhishek Choudhary | Mayur Raj                       |
+| Procurement recommendation        | Mayur Raj          | Abhishek Choudhary              |
+| SPR optimization                  | Abhishek Choudhary | Mayur Raj                       |
+| End-to-end workflow orchestration | Mayur Raj          | Ayush Kumar, Abhishek Choudhary |
+| Explainability and evaluation     | Abhishek Choudhary | Ayush Kumar                     |
+| Continuous learning               | Abhishek Choudhary | Mayur Raj                       |
+| Multi-commodity adapters          | Mayur Raj          | Abhishek Choudhary, Ayush Kumar |
+| Deployment                        | Ayush Kumar        | Mayur Raj                       |
+| Demo and presentation             | Ayush Kumar        | Abhishek Choudhary, Mayur Raj   |
 
 ---
 
@@ -2286,19 +2340,19 @@ Phase 12 + Phase 13 + Phase 14 -> Phase 15
 
 ## Risk Register
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Real-time news changes too quickly | False alarms or missed signals | Use source reliability, corroboration, freshness, and official alerts where available |
-| Free AIS coverage is incomplete | Weak vessel-level evidence | Use AISStream/sample AIS for demo and PortWatch/seeded trends for stability |
-| Exact cargo and refinery contract data is unavailable | Scenario uncertainty | Mark such fields as simulated and use transparent assumptions |
-| Knowledge graph becomes overcomplicated | Slow implementation | Start with 10-12 node types and only core relationships |
-| LLM extraction produces invalid JSON | Pipeline failures | Validate output with Pydantic and add deterministic fallback rules |
-| Risk scoring feels arbitrary | Low judge/user trust | Show formula, top drivers, evidence, and calibration roadmap |
-| Scenario assumptions are challenged | Credibility risk | Store every assumption in `docs/SCENARIO_ASSUMPTIONS.md` and expose in UI |
-| Recommendation seems non-executable | Weak business impact | Include cost, delay, risk, feasibility, confidence, and constraints for every option |
-| Continuous learning overfits small historical data | Misleading improvement claims | Use backtesting, model registry, and conservative deployment gates |
-| Multi-commodity expansion breaks crude MVP | Regression risk | Add adapter interface and tests before adding new commodities |
-| Team members overlap on same files | Merge conflicts | Assign file ownership by phase and freeze schemas before parallel work |
+| Risk                                                  | Impact                         | Mitigation                                                                            |
+| ----------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
+| Real-time news changes too quickly                    | False alarms or missed signals | Use source reliability, corroboration, freshness, and official alerts where available |
+| Free AIS coverage is incomplete                       | Weak vessel-level evidence     | Use AISStream/sample AIS for demo and PortWatch/seeded trends for stability           |
+| Exact cargo and refinery contract data is unavailable | Scenario uncertainty           | Mark such fields as simulated and use transparent assumptions                         |
+| Knowledge graph becomes overcomplicated               | Slow implementation            | Start with 10-12 node types and only core relationships                               |
+| LLM extraction produces invalid JSON                  | Pipeline failures              | Validate output with Pydantic and add deterministic fallback rules                    |
+| Risk scoring feels arbitrary                          | Low judge/user trust           | Show formula, top drivers, evidence, and calibration roadmap                          |
+| Scenario assumptions are challenged                   | Credibility risk               | Store every assumption in`docs/SCENARIO_ASSUMPTIONS.md` and expose in UI            |
+| Recommendation seems non-executable                   | Weak business impact           | Include cost, delay, risk, feasibility, confidence, and constraints for every option  |
+| Continuous learning overfits small historical data    | Misleading improvement claims  | Use backtesting, model registry, and conservative deployment gates                    |
+| Multi-commodity expansion breaks crude MVP            | Regression risk                | Add adapter interface and tests before adding new commodities                         |
+| Team members overlap on same files                    | Merge conflicts                | Assign file ownership by phase and freeze schemas before parallel work                |
 
 ---
 
@@ -2340,17 +2394,18 @@ Minimum required demo capabilities:
 After MVP, prioritize these features:
 
 1. **Knowledge Graph Depth**
+
    - Add company-level suppliers, vessel operators, banks, insurers, and contract placeholders.
    - Improve refinery-grade compatibility logic.
    - Add graph path explanations in recommendations.
-
 2. **Continuous Learning**
+
    - Add historical disruption case library.
    - Backtest risk thresholds.
    - Calibrate event severity and recommendation scoring.
    - Capture human feedback on accepted/rejected recommendations.
-
 3. **Multi-Commodity Expansion**
+
    - Convert crude-specific logic into adapter-based commodity modules.
    - Add LNG first, then coal, fertilizer, and critical minerals.
    - Add cross-commodity cascade modelling.

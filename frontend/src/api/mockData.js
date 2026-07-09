@@ -1,12 +1,3 @@
-// Mock API responses shaped exactly like the backend Pydantic schemas in
-// backend/models/*.py and documented in docs/API_REFERENCE.md. Frontend
-// pages should be built against this file first, then switched to the live
-// backend by flipping VITE_USE_MOCK_DATA to false (see energyShieldApi.js).
-//
-// Add one mock entry here per endpoint as its page/component is built.
-// Keep field names and enum values in sync with the backend schemas -
-// this file is the frontend's copy of the frozen API contract.
-
 export const mockHealth = {
   status: 'ok',
   service: 'energyshield-backend',
@@ -14,21 +5,105 @@ export const mockHealth = {
   checked_at: '2026-07-06T09:00:00Z',
 }
 
-// TODO(Phase 1): mock GET /data/freshness -> SourceFreshness[]
-export const mockDataFreshness = []
+export const mockDataFreshness = [
+  {
+    source_name: 'gdelt',
+    last_successful_fetch_at: '2026-07-09T09:00:00Z',
+    last_attempt_at: '2026-07-09T09:00:00Z',
+    is_healthy: true,
+    consecutive_failures: 0,
+    reliability_tier: 'MEDIUM',
+  },
+  {
+    source_name: 'maritime_alerts',
+    last_successful_fetch_at: '2026-07-09T09:05:00Z',
+    last_attempt_at: '2026-07-09T09:05:00Z',
+    is_healthy: true,
+    consecutive_failures: 0,
+    reliability_tier: 'HIGH',
+  },
+  {
+    source_name: 'sanctions',
+    last_successful_fetch_at: '2026-07-09T08:00:00Z',
+    last_attempt_at: '2026-07-09T08:00:00Z',
+    is_healthy: true,
+    consecutive_failures: 0,
+    reliability_tier: 'OFFICIAL',
+  },
+]
 
-// TODO(Phase 4): mock GET /events/latest -> RiskEvent[]
+export const mockDigitalTwinMap = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: { entity_id: 'EXP_BAS', name: 'Basra Terminal', entity_type: 'ExportPort' },
+      geometry: { type: 'Point', coordinates: [47.8, 29.9] },
+    },
+    {
+      type: 'Feature',
+      properties: { entity_id: 'IMP_JAM', name: 'Jamnagar Port', entity_type: 'ImportPort' },
+      geometry: { type: 'Point', coordinates: [70.0, 22.5] },
+    },
+    {
+      type: 'Feature',
+      properties: { entity_id: 'REF_JAM', name: 'Reliance Jamnagar', entity_type: 'Refinery' },
+      geometry: { type: 'Point', coordinates: [69.8, 22.4] },
+    },
+    {
+      type: 'Feature',
+      properties: { entity_id: 'SPR_PAD', name: 'Padur SPR', entity_type: 'SPR' },
+      geometry: { type: 'Point', coordinates: [74.8, 13.1] },
+    },
+    {
+      type: 'Feature',
+      properties: { entity_id: 'RT_BAS_JAM', name: 'Basra to Jamnagar', entity_type: 'ShippingRoute' },
+      geometry: { type: 'LineString', coordinates: [[47.8, 29.9], [56.2, 26.5], [70.0, 22.5]] },
+    },
+    {
+      type: 'Feature',
+      properties: { entity_id: 'CHK_HORMUZ', name: 'Strait of Hormuz', entity_type: 'Chokepoint' },
+      geometry: { type: 'Polygon', coordinates: [[[56.0, 26.0], [56.5, 26.0], [56.5, 26.5], [56.0, 26.5], [56.0, 26.0]]] },
+    },
+  ],
+}
+
+export const mockDigitalTwinExposure = {
+  total_supplier_exposure_percent: 100,
+  route_exposure_percent: { RT_BAS_JAM: 28.1 },
+  chokepoint_exposure_percent: { CHK_HORMUZ: 62.4 },
+  total_refineries: 3,
+  total_spr_capacity_mmbbl: 39,
+}
+
+export const mockRefineriesExposed = [
+  {
+    entity_id: 'REF_JAM',
+    name: 'Reliance Jamnagar',
+    risk_level: 'HIGH',
+    via_route_id: 'RT_BAS_JAM',
+  },
+]
+
+export const mockAlternativeSuppliers = [
+  {
+    entity_id: 'SUP_KSA',
+    name: 'Saudi Arabia',
+    region: 'Middle East',
+    import_share_percent: 18.7,
+    crude_grade_ids: ['GRADE_ARAB_LIGHT'],
+  },
+  {
+    entity_id: 'SUP_UAE',
+    name: 'United Arab Emirates',
+    region: 'Middle East',
+    import_share_percent: 9.4,
+    crude_grade_ids: ['GRADE_MURBAN'],
+  },
+]
+
 export const mockLatestEvents = []
-
-// TODO(Phase 5): mock GET /risk/corridors and /risk/suppliers
 export const mockCorridorRisk = []
 export const mockSupplierRisk = []
-
-// TODO(Phase 2): mock GET /digital-twin/map
-export const mockDigitalTwinMap = null
-
-// TODO(Phase 6): mock POST /scenarios/run -> ScenarioResult
 export const mockScenarioResult = null
-
-// TODO(Phase 7): mock GET /recommendations/{scenario_id} -> Recommendation
 export const mockRecommendation = null

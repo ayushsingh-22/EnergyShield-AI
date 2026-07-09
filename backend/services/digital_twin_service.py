@@ -21,8 +21,16 @@ from models.digital_twin_schema import (
 
 logger = logging.getLogger(__name__)
 
+# Anchored to this file's location (not the process cwd) so the default
+# resolves correctly whether the app is run from the repo root, from
+# `backend/` (per README), or in Docker where `data/` is mounted one level
+# above the `/app` working directory - all three put `data/seeds` two
+# parents above this file.
+_DEFAULT_DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "seeds"
+
+
 class DigitalTwinService:
-    def __init__(self, data_dir: str = "data/seeds"):
+    def __init__(self, data_dir: str | Path = _DEFAULT_DATA_DIR):
         self.data_dir = Path(data_dir)
         self.suppliers: Dict[str, SupplierCountry] = {}
         self.export_ports: Dict[str, ExportPort] = {}

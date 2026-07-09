@@ -100,7 +100,6 @@ class Refinery(DigitalTwinEntityBase):
 
 class StrategicReserveSite(DigitalTwinEntityBase):
     """A strategic petroleum reserve (SPR) storage site."""
-    site: str
     capacity_mmbbl: Optional[float] = Field(default=None, ge=0)
     supported_refinery_ids: List[str] = Field(default_factory=list)
     drawdown_priority: int = 1
