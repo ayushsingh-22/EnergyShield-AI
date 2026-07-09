@@ -1,11 +1,6 @@
-refinery_id,refinery_name,owner_type,state,latitude,longitude,capacity_mbpd,import_port_id,data_quality
-REF-JAMNAGAR,Reliance Jamnagar Refinery,private,Gujarat,22.34,69.85,1.24,JAMNAGAR,estimated
-REF-PARADIP,IOCL Paradip Refinery,PSU,Odisha,20.26,86.61,0.30,PARADIP,estimated
-REF-VIZAG,HPCL Visakhapatnam Refinery,PSU,Andhra Pradesh,17.68,83.22,0.17,VIZAG,estimated
-REF-MUMBAI,BPCL Mumbai Refinery,PSU,Maharashtra,19.00,72.85,0.31,JNPT,estimated
-REF-CHENNAI,CPCL Chennai Refinery,JV,Tamil Nadu,13.17,80.30,0.21,CHENNAI,estimated
-REF-KOCHI,BPCL Kochi Refinery,PSU,Kerala,9.95,76.27,0.31,KOCHI,estimated
-REF-BARAUNI,IOCL Barauni Refinery,PSU,Bihar,25.48,85.97,0.12,PARADIP,estimated
-REF-MATHURA,IOCL Mathura Refinery,PSU,Uttar Pradesh,27.49,77.67,0.16,JAMNAGAR,estimated
-REF-PANIPAT,IOCL Panipat Refinery,PSU,Haryana,29.39,76.97,0.30,JAMNAGAR,estimated
-REF-NUMALIGARH,Numaligarh Refinery (NRL),JV,Assam,26.66,93.72,0.09,PARADIP,estimated
+entity_id,name,owner,capacity_bpd,connected_import_port_ids,location_name,lat,lon
+REF_JAM,Reliance Jamnagar,private,1240000,PRT_JAM,Jamnagar,22.36,69.96
+REF_PAR,IOCL Paradip,public,300000,PRT_PAR,Paradip,20.26,86.63
+REF_MUM,BPCL Mumbai,public,240000,PRT_MUM,Mumbai,18.99,72.90
+REF_MAN,MRPL Mangalore,public,300000,PRT_MAN,Mangalore,12.97,74.84
+REF_VIS,HPCL Visakh,public,166000,PRT_VIS,Visakhapatnam,17.68,83.27

@@ -1,11 +1,6 @@
-supplier_id,supplier_country,region,import_share_percent,default_route_id,crude_grade,data_quality
-RUSSIA,Russia,Eastern Europe / CIS,35,ROUTE-RUSSIA-JAMNAGAR,Urals,estimated
-IRAQ,Iraq,Middle East,20,ROUTE-IRAQ-JAMNAGAR,Basrah Light,estimated
-SAUDI_ARABIA,Saudi Arabia,Middle East,14,ROUTE-SAUDI-JAMNAGAR,Arab Light,estimated
-UAE,United Arab Emirates,Middle East,8,ROUTE-UAE-MUMBAI,Murban,estimated
-USA,United States,North America,5,ROUTE-USA-KOCHI,WTI Midland,estimated
-NIGERIA,Nigeria,West Africa,4,ROUTE-NIGERIA-VIZAG,Bonny Light,estimated
-KUWAIT,Kuwait,Middle East,3,ROUTE-KUWAIT-JAMNAGAR,Kuwait Export Crude,estimated
-ANGOLA,Angola,West/Central Africa,2,ROUTE-ANGOLA-CHENNAI,Cabinda,estimated
-BRAZIL,Brazil,South America,2,ROUTE-BRAZIL-MUMBAI,Lula,estimated
-MEXICO,Mexico,North America,1,ROUTE-MEXICO-PARADIP,Maya,estimated
+entity_id,name,country,region,import_share_percent,default_export_port_id,default_shipping_route_id,data_source,is_simulated
+SUP_IRQ,Iraq,Iraq,Middle East,20.5,PRT_BASRA,RT_BAS_JAM,official,false
+SUP_RUS,Russia,Russia,Eurasia,35.0,PRT_NOVOROS,RT_NOV_JAM,official,false
+SUP_KSA,Saudi Arabia,Saudi Arabia,Middle East,15.2,PRT_RAS,RT_RAS_MUN,official,false
+SUP_UAE,UAE,UAE,Middle East,10.0,PRT_FUJ,RT_FUJ_MAN,official,false
+SUP_USA,United States,United States,North America,5.0,PRT_HOUSTON,RT_HOU_PAR,official,false
