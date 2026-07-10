@@ -21,16 +21,16 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
-| GET | `/events/latest` | Planned (Phase 4) | `event_schema.RiskEvent[]` | Latest structured events |
-| GET | `/events/{event_id}` | Planned (Phase 4) | `event_schema.RiskEvent` | Single event detail |
+| GET | `/events/latest` | Live (Phase 4) | `event_schema.RiskEvent[]` | Latest structured events, most recent first; `?limit=` (default 50, max 200) |
+| GET | `/events/{event_id}` | Live (Phase 4) | `event_schema.RiskEvent` | Single event detail; 404 if unknown |
 
 ## Risk
 
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
-| GET | `/risk/corridors` | Planned (Phase 5) | risk score list | Chokepoint/route risk cards |
-| GET | `/risk/suppliers` | Planned (Phase 5) | risk score list | Supplier country/company risk cards |
-| GET | `/risk/history/{entity_id}` | Planned (Phase 5) | risk score history | Trend data for charts |
+| GET | `/risk/corridors` | Live (Phase 5 demo) | risk score list | Chokepoint/route risk cards |
+| GET | `/risk/suppliers` | Live (Phase 5 demo) | risk score list | Supplier country/company risk cards |
+| GET | `/risk/history/{entity_id}` | Live (Phase 5 demo) | risk score history | Trend data for charts |
 
 ## Digital Twin
 
@@ -57,20 +57,20 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 
 | Method | Path | Status | Request Schema | Response Schema | Notes |
 | --- | --- | --- | --- | --- | --- |
-| POST | `/scenarios/run` | Planned (Phase 6) | `scenario_schema.ScenarioRequest` | `scenario_schema.ScenarioResult` | |
-| GET | `/scenarios/{scenario_id}` | Planned (Phase 6) | - | `scenario_schema.ScenarioResult` | |
+| POST | `/scenarios/run` | Live (Phase 6 demo) | `scenario_schema.ScenarioRequest` | `scenario_schema.ScenarioResult` | Deterministic demo simulation |
+| GET | `/scenarios/{scenario_id}` | Live (Phase 6 demo) | - | `scenario_schema.ScenarioResult` | In-memory scenario retrieval |
 
 ## Recommendations
 
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
-| GET | `/recommendations/{scenario_id}` | Planned (Phase 7) | `recommendation_schema.Recommendation` | |
+| GET | `/recommendations/{scenario_id}` | Live (Phase 7 demo) | `recommendation_schema.Recommendation` | Generated from stored scenario output |
 
 ## Reports and Audit
 
 | Method | Path | Status | Notes |
 | --- | --- | --- | --- |
-| POST | `/reports/generate` | Planned (Phase 8) | Executive crisis-response report |
+| POST | `/reports/generate` | Live (Phase 8 demo) | Executive crisis-response report |
 | GET | `/audit/{entity_id}` | Planned (Phase 11) | Full audit trail for an event/scenario/recommendation |
 
 ## Continuous Learning
@@ -89,12 +89,12 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 
 | Method | Path | Status | Notes |
 | --- | --- | --- | --- |
-| GET | `/commodities` | Planned (Phase 14) | |
-| GET | `/commodities/{commodity_type}/entities` | Planned (Phase 14) | |
-| GET | `/commodities/{commodity_type}/risk` | Planned (Phase 14) | |
-| GET | `/commodities/{commodity_type}/scenarios` | Planned (Phase 14) | |
-| POST | `/commodities/{commodity_type}/scenarios/run` | Planned (Phase 14) | |
-| GET | `/commodities/{commodity_type}/recommendations/{scenario_id}` | Planned (Phase 14) | |
+| GET | `/commodities` | Live (Phase 14 partial) | |
+| GET | `/commodities/{commodity_type}/entities` | Live (Phase 14 partial) | |
+| GET | `/commodities/{commodity_type}/risk` | Live (Phase 14 partial) | |
+| GET | `/commodities/{commodity_type}/scenarios` | Live (Phase 14 partial) | |
+| POST | `/commodities/{commodity_type}/scenarios/run` | Live (Phase 14 partial) | |
+| GET | `/commodities/{commodity_type}/recommendations/{scenario_id}` | Live (Phase 14 partial) | |
 
 ## Conventions
 
@@ -107,3 +107,4 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
   to make demo data look real.
 - Breaking changes to a **Live** endpoint require updating this file and the
   frontend mock data (`frontend/src/api/mockData.js`) in the same change.
+

@@ -8,17 +8,23 @@ recommendation query it instead of hardcoding relationships.
 
 ## Node Types
 
+Every node's Pydantic model (`backend/models/digital_twin_schema.py`) is
+written into the graph verbatim via `entity.model_dump(by_alias=True)`
+(`backend/graph/seed_graph.py::_entity_properties`), so the property names
+below are exactly the model's field names - there is no separate
+graph-only naming convention.
+
 | Node Label | Represents | Key Properties |
 | --- | --- | --- |
-| `Commodity` | A tracked commodity (`CommodityType`) | `commodity_type` |
-| `SupplierCountry` | A crude-exporting country | `entity_id`, `name`, `region`, `import_share_percent`, `data_quality` |
+| `Commodity` | A tracked commodity (`CommodityType`) | `entity_id`, `name` |
+| `SupplierCountry` | A crude-exporting country | `entity_id`, `name`, `region`, `import_share_percent`, `data_source`, `is_simulated` |
 | `SupplierCompany` | A company-level supplier (future depth beyond MVP) | `entity_id`, `name`, `country` |
-| `ExportPort` | Origin loading port/terminal | `entity_id`, `name`, `country`, `latitude`, `longitude` |
-| `ShippingRoute` | A maritime route between an export port and an import port | `entity_id`, `route_id`, `distance_notes` |
-| `Chokepoint` | A maritime chokepoint or route waypoint | `entity_id`, `name`, `risk_note` |
-| `ImportPort` | Indian receiving port | `entity_id`, `name`, `state`, `latitude`, `longitude` |
-| `Refinery` | Indian refinery | `entity_id`, `name`, `owner_type`, `capacity_mbpd`, `data_quality` |
-| `StrategicReserveSite` | Indian strategic petroleum reserve (SPR) cavern | `entity_id`, `name`, `capacity_mmt`, `data_quality` |
+| `ExportPort` | Origin loading port/terminal | `entity_id`, `name`, `country`, `coordinates` |
+| `ShippingRoute` | A maritime route between an export port and an import port | `entity_id`, `origin_port_id`, `destination_port_id`, `distance_km`, `estimated_transit_days`, `risk_level` |
+| `Chokepoint` | A maritime chokepoint or route waypoint | `entity_id`, `name`, `importance_score`, `risk_level` |
+| `ImportPort` | Indian receiving port | `entity_id`, `name`, `state`, `coordinates` |
+| `Refinery` | Indian refinery | `entity_id`, `name`, `owner`, `capacity_bpd`, `location_name` |
+| `StrategicReserveSite` | Indian strategic petroleum reserve (SPR) cavern | `entity_id`, `name`, `capacity_mmbbl`, `drawdown_priority` |
 | `CrudeGrade` | A crude oil grade/quality class | `entity_id`, `name` |
 | `RiskEvent` | A structured event from the event extraction agent (Phase 4) | `event_id`, `event_type`, `severity`, `confidence`, `detected_at` |
 | `SanctionEntity` | A sanctioned country, entity, vessel, or bank | `entity_id`, `name`, `list_type` |
@@ -49,10 +55,22 @@ stays fast to query and easy to extend for Phase 14 commodities.
 | `MITIGATES` | `Recommendation` | `Scenario` | Recommendation addresses this scenario's impact |
 | `USES_ROUTE` | `Recommendation` | `ShippingRoute` | Recommendation proposes routing cargo this way |
 
-`AFFECTS` edges carry `confidence` and `created_at`/`expires_at` properties
-so `relationship_builder.py` can expire stale event impact without
-deleting the historical `RiskEvent` node itself (needed for Phase 13
-backtesting and audit replay).
+`AFFECTS` edges carry `confidence`, `severity`, and `detected_at`
+properties, plus `expired_at` (set on resolution, left `NULL` while the
+event is still active) so `relationship_builder.py` can expire stale event
+impact without deleting the historical `RiskEvent` node itself (needed for
+Phase 13 backtesting and audit replay).
+
+**Known gap**: `CrudeGrade`, `ACCEPTS_GRADE`, and `PRODUCES_GRADE` are
+declared in `backend/graph/schema.cypher` and the loading code for them
+already exists in `backend/graph/seed_graph.py`, but no seed file
+currently populates `SupplierCountry.supported_crude_grade_ids` or
+`Refinery.accepted_crude_grade_ids` - so today the graph never actually
+creates a `CrudeGrade` node or either relationship. This doesn't block any
+checked Phase 2/3 validation item (crude-grade compatibility is a
+Long-Term Extension item, not an MVP requirement), but it means the
+ontology below is aspirational for that one entity type until a crude
+grade seed dataset is added.
 
 ## Seed Data to Graph Mapping
 
@@ -61,11 +79,11 @@ backtesting and audit replay).
 
 | Seed File | Populates |
 | --- | --- |
-| `crude_suppliers.csv` | `SupplierCountry` nodes, `PRODUCES_GRADE` edges to `CrudeGrade`, default `USES_ROUTE` linkage |
+| `crude_suppliers.csv` | `SupplierCountry` nodes, `SUPPLIES`/`EXPORTS_FROM` edges, default `USES_ROUTE` linkage (no `PRODUCES_GRADE` edges yet - see "Known gap" above) |
 | `export_ports.csv` | `ExportPort` nodes, `EXPORTS_FROM` edges |
 | `import_ports.csv` | `ImportPort` nodes |
-| `refineries.csv` | `Refinery` nodes, `FEEDS` edges from their `import_port_id` |
-| `spr_sites.csv` | `StrategicReserveSite` nodes, `CAN_SUPPORT` edges from `linked_refinery_ids` |
+| `refineries.csv` | `Refinery` nodes, `FEEDS` edges from their import port(s) (no `ACCEPTS_GRADE` edges yet - see "Known gap" above) |
+| `spr_sites.csv` | `StrategicReserveSite` nodes, `CAN_SUPPORT` edges from `supported_refinery_ids` |
 | `chokepoints.geojson` | `Chokepoint` nodes with their polygon/point geometry |
 | `routes.geojson` | `ShippingRoute` nodes, `USES_ROUTE`, `TRANSITS`, and `ARRIVES_AT` edges |
 
@@ -79,34 +97,33 @@ These mirror the required functions in `backend/graph/graph_queries.py`.
 scoring (Phase 5) and the Energy Map's exposure highlighting.
 
 ```cypher
-MATCH (c:Chokepoint {entity_id: $chokepoint_id})<-[:TRANSITS]-(r:ShippingRoute)
-      -[:ARRIVES_AT]->(p:ImportPort)-[:FEEDS]->(ref:Refinery)
-RETURN DISTINCT ref.entity_id AS refinery_id,
-       ref.name AS refinery_name,
-       ref.capacity_mbpd AS capacity_mbpd,
-       collect(DISTINCT r.route_id) AS exposed_via_routes
-ORDER BY ref.capacity_mbpd DESC;
+MATCH (c:Chokepoint {entity_id: $chokepoint_id})<-[:TRANSITS]-(route:ShippingRoute)
+      -[:ARRIVES_AT]->(port:ImportPort)-[:FEEDS]->(refinery:Refinery)
+RETURN DISTINCT refinery.entity_id AS entity_id, refinery.name AS name,
+       refinery.risk_level AS risk_level, route.entity_id AS via_route_id;
 ```
 
 ### 2. Alternative suppliers for a disrupted/blocked supplier
 
 `get_alternative_suppliers(commodity, blocked_supplier_id)` - used by the
-procurement agent (Phase 7) to find compatible-grade suppliers that are not
-currently affected by a high-severity event.
+procurement agent (Phase 7) to find same-commodity suppliers that are not
+currently affected by any active event.
 
 ```cypher
-MATCH (blocked:SupplierCountry {entity_id: $blocked_supplier_id})
-      -[:PRODUCES_GRADE]->(grade:CrudeGrade)
-      <-[:PRODUCES_GRADE]-(alt:SupplierCountry)
+MATCH (alt:SupplierCountry)-[:SUPPLIES]->(:Commodity {entity_id: $commodity})
 WHERE alt.entity_id <> $blocked_supplier_id
-  AND NOT EXISTS {
-        MATCH (alt)<-[:AFFECTS]-(e:RiskEvent)
-        WHERE e.severity >= 4 AND e.expires_at > datetime()
-      }
-RETURN alt.entity_id AS supplier_id, alt.name AS supplier_name,
-       grade.name AS shared_grade, alt.import_share_percent AS current_share
+OPTIONAL MATCH (alt)-[:PRODUCES_GRADE]->(grade:CrudeGrade)
+OPTIONAL MATCH (:RiskEvent)-[r:AFFECTS]->(alt) WHERE r.expired_at IS NULL
+WITH alt, collect(DISTINCT grade.entity_id) AS crude_grade_ids, count(r) AS active_event_count
+WHERE active_event_count = 0
+RETURN alt.entity_id AS entity_id, alt.name AS name, alt.region AS region,
+       alt.import_share_percent AS import_share_percent, crude_grade_ids
 ORDER BY alt.import_share_percent DESC;
 ```
+
+Note this filters only by commodity + absence of an active `AFFECTS` edge,
+not by shared crude grade - `crude_grade_ids` is returned for display but
+is always empty today (see the `CrudeGrade` "Known gap" above).
 
 ### 3. Routes available for a given supplier
 
@@ -114,11 +131,11 @@ ORDER BY alt.import_share_percent DESC;
 and the Energy Map.
 
 ```cypher
-MATCH (s:SupplierCountry {entity_id: $supplier_id})-[:EXPORTS_FROM]->(ep:ExportPort)
-      -[:USES_ROUTE]->(route:ShippingRoute)-[:ARRIVES_AT]->(ip:ImportPort)
-OPTIONAL MATCH (route)-[:TRANSITS]->(cp:Chokepoint)
-RETURN route.route_id AS route_id, ep.name AS export_port,
-       ip.name AS import_port, collect(cp.entity_id) AS chokepoints;
+MATCH (s:SupplierCountry {entity_id: $supplier_id})-[:EXPORTS_FROM]->(:ExportPort)
+      -[:USES_ROUTE]->(route:ShippingRoute)
+RETURN DISTINCT route.entity_id AS entity_id, route.name AS name,
+       route.risk_level AS risk_level, route.estimated_transit_days AS estimated_transit_days,
+       route.distance_km AS distance_km;
 ```
 
 ### 4. Scenarios triggered by a specific event
@@ -127,9 +144,9 @@ RETURN route.route_id AS route_id, ep.name AS export_port,
 dashboard to show why a scenario ran.
 
 ```cypher
-MATCH (sc:Scenario)-[:TRIGGERED_BY]->(e:RiskEvent {event_id: $event_id})
-RETURN sc.scenario_id AS scenario_id, sc.scenario_type AS scenario_type,
-       sc.confidence AS confidence;
+MATCH (scenario:Scenario)-[:TRIGGERED_BY]->(:RiskEvent {entity_id: $event_id})
+RETURN scenario.entity_id AS entity_id, scenario.scenario_type AS scenario_type,
+       scenario.confidence AS confidence;
 ```
 
 ### 5. Strategic reserve sites that can support a refinery
@@ -138,15 +155,18 @@ RETURN sc.scenario_id AS scenario_id, sc.scenario_type AS scenario_type,
 (Phase 7).
 
 ```cypher
-MATCH (site:StrategicReserveSite)-[:CAN_SUPPORT]->(ref:Refinery {entity_id: $refinery_id})
-RETURN site.entity_id AS site_id, site.name AS site_name,
-       site.capacity_mmt AS capacity_mmt, site.data_quality AS data_quality;
+MATCH (spr:StrategicReserveSite)-[:CAN_SUPPORT]->(:Refinery {entity_id: $refinery_id})
+RETURN spr.entity_id AS entity_id, spr.name AS name, spr.capacity_mmbbl AS capacity_mmbbl,
+       spr.drawdown_priority AS drawdown_priority
+ORDER BY spr.drawdown_priority ASC;
 ```
 
 ## Notes on Data Quality in the Graph
 
-Every `SupplierCountry`, `Refinery`, and `StrategicReserveSite` node carries
-a `data_quality` property copied straight from the seed CSVs
-(`actual`, `estimated`, or `simulated`). Queries and downstream scoring must
-propagate this into `confidence`/`assumptions` rather than treating graph
-results as ground truth (Planning Principles #4 and #9).
+`SupplierCountry` nodes carry `data_source` (e.g. `"official"`,
+`"estimated"`) and a separate `is_simulated` boolean, copied straight from
+`crude_suppliers.csv` - there is no single unified `data_quality` property,
+and `Refinery`/`StrategicReserveSite` nodes carry no data-quality field at
+all today. Queries and downstream scoring must propagate whatever
+provenance a node does carry into `confidence`/`assumptions` rather than
+treating graph results as ground truth (Planning Principles #4 and #9).

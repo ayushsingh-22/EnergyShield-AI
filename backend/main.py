@@ -11,7 +11,18 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import data_sources, digital_twin, graph, health
+from api.routes import (
+    commodities,
+    data_sources,
+    digital_twin,
+    events,
+    graph,
+    health,
+    recommendations,
+    reports,
+    risk,
+    scenarios,
+)
 
 API_V1_PREFIX = os.getenv("API_V1_PREFIX", "/api/v1")
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
@@ -31,7 +42,12 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix=API_V1_PREFIX)
-# These routers embed the full "/api/v1/..." prefix themselves.
 app.include_router(data_sources.router)
 app.include_router(digital_twin.router)
 app.include_router(graph.router)
+app.include_router(events.router)
+app.include_router(risk.router)
+app.include_router(scenarios.router)
+app.include_router(recommendations.router)
+app.include_router(reports.router)
+app.include_router(commodities.router)

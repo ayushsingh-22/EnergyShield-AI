@@ -6,15 +6,10 @@ from datetime import datetime
 
 from pydantic import Field
 
-from models.core_schema import (
-    CommodityType,
-    EnergyShieldBaseModel,
-    EntityType,
-    RiskLevel,
-)
+from models.core_schema import AuditableMixin, CommodityType, EntityType, RiskLevel
 
 
-class RiskScore(EnergyShieldBaseModel):
+class RiskScore(AuditableMixin):
     """Matches the "Risk Score Output Schema" in Phase 5 of the implementation plan."""
 
     entity_id: str

@@ -1,6 +1,9 @@
+import ProjectBrand from '../components/layout/ProjectBrand'
+
 export default function CommodityCommandCenter() {
   return (
     <div className="page page-commodity-command-center">
+      <ProjectBrand compact subtitle="Multi-commodity control" />
       <h1>Commodity Command Center</h1>
       <p>
         TODO(Phase 9): Shows a commodity selector and commodity-specific

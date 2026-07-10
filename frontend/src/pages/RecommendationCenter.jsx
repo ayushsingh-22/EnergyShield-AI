@@ -1,6 +1,9 @@
+import ProjectBrand from '../components/layout/ProjectBrand'
+
 export default function RecommendationCenter() {
   return (
     <div className="page page-recommendation-center">
+      <ProjectBrand compact subtitle="Procurement guidance" />
       <h1>Recommendation Center</h1>
       <p>
         TODO(Phase 9): Shows ranked supplier-route alternatives and SPR

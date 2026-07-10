@@ -50,9 +50,9 @@ cp .env.example .env
 docker-compose up --build
 ```
 
-- Backend: <http://localhost:8000/api/v1/health>
-- Backend docs: <http://localhost:8000/docs>
-- Frontend: <http://localhost:5173>
+- Backend: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+- Backend docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Frontend: [http://localhost:5173](http://localhost:5173)
 
 ### Option B: Run services locally
 
@@ -66,8 +66,8 @@ poetry install
 poetry run uvicorn main:app --reload
 ```
 
-- Health check: <http://localhost:8000/api/v1/health>
-- Interactive API docs: <http://localhost:8000/docs>
+- Health check: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+- Interactive API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 Frontend:
 
@@ -77,7 +77,7 @@ npm install
 npm run dev
 ```
 
-- App: <http://localhost:5173>
+- App: [http://localhost:5173](http://localhost:5173)
 
 Run backend and frontend in separate terminals - both need to stay running
 for the dashboard to reach the live API (or set
@@ -90,11 +90,11 @@ By default the frontend targets `VITE_USE_MOCK_DATA=true` (see
 
 ## Team Ownership
 
-| Role | Person | Core Responsibility |
-| --- | --- | --- |
-| Frontend and Backend Lead | Ayush Kumar | Frontend dashboard, backend APIs, database integration, report generation, deployment |
-| ML and Agents Lead | Abhishek Choudhary | Event extraction, risk scoring, scenario modelling, continuous learning, explainability |
-| Data, Orchestration, and Knowledge Graph Lead | Mayur Raj | Data ingestion, schedulers, orchestration, knowledge graph, procurement orchestration |
+| Role                                          | Person             | Core Responsibility                                                                     |
+| --------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------- |
+| Frontend and Backend Lead                     | Ayush Kumar        | Frontend dashboard, backend APIs, database integration, report generation, deployment   |
+| ML and Agents Lead                            | Abhishek Choudhary | Event extraction, risk scoring, scenario modelling, continuous learning, explainability |
+| Data, Orchestration, and Knowledge Graph Lead | Mayur Raj          | Data ingestion, schedulers, orchestration, knowledge graph, procurement orchestration   |
 
 ## Non-Negotiable Product Decisions
 

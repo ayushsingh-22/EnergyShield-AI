@@ -57,6 +57,44 @@
         "type": "LineString",
         "coordinates": [[37.77, 44.72], [28.9, 41.0], [32.3, 31.2], [43.2, 12.5], [69.96, 22.47]]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "entity_id": "RT_FUJ_MAN",
+        "name": "Fujairah to Mundra",
+        "origin_port_id": "PRT_FUJ",
+        "destination_port_id": "PRT_MUN",
+        "affected_chokepoint_ids": [],
+        "distance_km": 1900,
+        "estimated_transit_days": 4.5,
+        "route_status": "OPEN",
+        "route_type": "MARITIME",
+        "risk_level": "LOW"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[56.33, 25.12], [62.0, 23.5], [69.73, 22.73]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "entity_id": "RT_HOU_PAR",
+        "name": "Houston to Paradip",
+        "origin_port_id": "PRT_HOUSTON",
+        "destination_port_id": "PRT_PAR",
+        "affected_chokepoint_ids": ["CHK_SUEZ", "CHK_BAB"],
+        "distance_km": 14500,
+        "estimated_transit_days": 29.0,
+        "route_status": "OPEN",
+        "route_type": "MARITIME",
+        "risk_level": "MEDIUM"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-95.36, 29.76], [-5.6, 36.0], [32.3, 31.2], [43.2, 12.5], [86.68, 20.26]]
+      }
     }
   ]
 }

@@ -1,6 +1,9 @@
+import ProjectBrand from '../components/layout/ProjectBrand'
+
 export default function ScenarioSimulator() {
   return (
     <div className="page page-scenario-simulator">
+      <ProjectBrand compact subtitle="Scenario simulation" />
       <h1>Scenario Simulator</h1>
       <p>
         TODO(Phase 9): Lets the user select scenario type, duration,
