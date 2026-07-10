@@ -54,6 +54,11 @@ body {
   margin: 0;
 }
 
+img {
+  display: block;
+  max-width: 100%;
+}
+
 #root {
   width: 1126px;
   max-width: 100%;

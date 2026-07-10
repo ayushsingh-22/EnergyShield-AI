@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from models.data_source_schema import DataSourceDefinition
 from models.core_schema import SourceReliability
@@ -87,3 +88,34 @@ def get_source_reliability(source_name: str) -> SourceReliability:
     if source:
         return source.reliability_tier
     return SourceReliability.LOW  # Default fallback
+
+
+# Real fetch-attempt history, keyed by source_name, so `/api/v1/data/freshness`
+# reports actual state instead of fabricating "now"/"healthy" on every call.
+# Populated by `record_fetch_attempt` whenever a collector's `.fetch()` is
+# actually invoked (see `api/routes/data_sources.py` and `api/routes/events.py`).
+_FRESHNESS_STATE: Dict[str, Dict[str, object]] = {}
+
+
+def record_fetch_attempt(source_name: str, success: bool) -> None:
+    """Records the outcome of one real collector fetch attempt for `source_name`."""
+    now = datetime.now(timezone.utc)
+    state = _FRESHNESS_STATE.setdefault(
+        source_name,
+        {"last_successful_fetch_at": None, "last_attempt_at": None, "consecutive_failures": 0},
+    )
+    state["last_attempt_at"] = now
+    if success:
+        state["last_successful_fetch_at"] = now
+        state["consecutive_failures"] = 0
+    else:
+        state["consecutive_failures"] = int(state["consecutive_failures"]) + 1
+
+
+def get_freshness_state(source_name: str) -> Dict[str, object]:
+    """Returns the recorded fetch state for `source_name`, or the
+    "never attempted" default if no collector has run yet for it."""
+    return _FRESHNESS_STATE.get(
+        source_name,
+        {"last_successful_fetch_at": None, "last_attempt_at": None, "consecutive_failures": 0},
+    )

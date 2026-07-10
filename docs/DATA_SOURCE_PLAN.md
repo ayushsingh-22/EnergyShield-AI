@@ -9,14 +9,22 @@ when a live source is unavailable (Phase 1 validation checklist).
 
 | Signal Type | Prototype Source | Update Frequency | Reliability Tier | Fallback |
 | --- | --- | --- | --- | --- |
-| Global news and geopolitical events | GDELT or configured RSS feeds | 15-30 min | Medium | Seeded article samples in `data/seeds/` |
-| Maritime security alerts | UKMTO, MARAD, MSCIO, IMB | 15-30 min | Official / High | Seeded alert JSON |
-| Sanctions | OFAC, EU, UN lists | Daily | Official | Last known snapshot |
-| Oil prices | EIA or FRED daily Brent/WTI | Daily | High | Last known price series |
-| Chokepoint / port activity | IMF PortWatch | Weekly | High | Seeded trend data |
-| AIS vessel movement | AISStream or sample AIS files | Live / batch demo | Low-Medium | Sample AIS file replay |
-| India crude import baseline | PPAC, TradeStat | Monthly / manual | High / Simulated | Manually curated CSV, marked `is_simulated` |
-| Geospatial layers | OSM, Natural Earth | Static / manual | High | Checked-in GeoJSON in `data/seeds/` |
+| Global news and geopolitical events | GDELT or configured RSS feeds | 15-30 min | Medium | Seeded article sample inline in `gdelt_collector.py` |
+| Maritime security alerts | UKMTO, MARAD, MSCIO, IMB | 15-30 min | Official / High | Seeded alert inline in `maritime_alert_collector.py` |
+| Sanctions | OFAC, EU, UN lists | Daily | Official | Seeded snapshot inline in `sanctions_collector.py`, diffed per-instance against what it already returned |
+| Oil prices | EIA or FRED daily Brent/WTI | Daily | High | Seeded 8-day Brent series inline in `commodity_price_collector.py` |
+| Chokepoint / port activity | IMF PortWatch | Weekly | High | Seeded trend sample inline in `portwatch_collector.py` |
+| AIS vessel movement | AISStream or sample AIS files | Live / batch demo | Low-Medium | Seeded sample inline in `ais_collector.py` |
+| India crude import baseline | PPAC, TradeStat | Monthly / manual | High / Simulated | Seeded sample inline in `import_baseline_collector.py`, marked `is_simulated` |
+| Geospatial layers | OSM, Natural Earth | Static / manual | High | Checked-in GeoJSON in `data/seeds/` (this is the one category that genuinely lives under `data/seeds/` today - see note below) |
+
+Note: only the digital-twin geospatial/CSV files (`data/seeds/*.csv`,
+`*.geojson` - suppliers, ports, refineries, SPR sites, chokepoints, routes)
+are externalized to `data/seeds/`. The seven ingestion collectors above
+each embed their fallback sample directly in the collector module rather
+than reading from `data/seeds/` - a real live-source integration would
+still hit `data/seeds/` as its offline fallback path, but that migration
+hasn't happened yet.
 
 ## Collector-to-Schema Mapping
 
@@ -34,7 +42,7 @@ reaches the event extraction agent (Phase 4).
 | `commodity_price_collector.py` | Price anomaly records | `PRICE_SPIKE` event candidates, risk scoring |
 | `ais_collector.py` | AIS anomaly records | `AIS_REROUTING` event candidates, risk scoring |
 | `portwatch_collector.py` | Chokepoint/port trend records | Corridor risk scoring |
-| `import_baseline_collector.py` | India import share baseline | Exposure model (Phase 5), scenario impact model (Phase 6) |
+| `import_baseline_collector.py` | India import share baseline | Not yet wired to a consumer - `services/digital_twin_service.py` reads `data/seeds/crude_suppliers.csv` directly instead of through this collector; only invoked today by the `/data/freshness` bootstrap |
 
 ## Reliability Tiers
 

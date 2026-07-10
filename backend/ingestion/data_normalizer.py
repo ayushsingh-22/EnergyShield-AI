@@ -4,14 +4,47 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 import uuid
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime
 
 from models.data_source_schema import RawSourceRecord, NormalizedSignal
-from models.core_schema import SourceReliability
+from models.core_schema import CommodityType, SourceReliability
 
 logger = logging.getLogger(__name__)
+
+# Known maritime chokepoints/corridors, keyed to the same entity_id
+# convention `data/seeds/chokepoints.geojson` and
+# `agents/entity_resolution_agent.py` use, so `corridor_hint` is directly
+# usable by downstream graph-aware consumers without a second translation
+# step (plan section 1.6, step 4: "Add corridor_hint where possible").
+_CORRIDOR_KEYWORDS: Dict[str, str] = {
+    "strait of hormuz": "CHK_HORMUZ",
+    "hormuz": "CHK_HORMUZ",
+    "bab el-mandeb": "CHK_BAB",
+    "bab-el-mandeb": "CHK_BAB",
+    "red sea": "CHK_BAB",
+    "suez canal": "CHK_SUEZ",
+    "suez": "CHK_SUEZ",
+    "malacca strait": "CHK_MALACCA",
+    "malacca": "CHK_MALACCA",
+}
+_CORRIDOR_PATTERNS = [
+    (re.compile(r"\b" + re.escape(keyword) + r"\b"), chokepoint_id)
+    for keyword, chokepoint_id in _CORRIDOR_KEYWORDS.items()
+]
+
+
+def _detect_corridor_hint(raw: RawSourceRecord) -> Optional[str]:
+    haystack = " ".join(part for part in (raw.location_name, raw.title, raw.raw_text) if part).lower()
+    if not haystack:
+        return None
+    for pattern, chokepoint_id in _CORRIDOR_PATTERNS:
+        if pattern.search(haystack):
+            return chokepoint_id
+    return None
+
 
 class DataNormalizer:
     def __init__(self):
@@ -73,7 +106,13 @@ class DataNormalizer:
                 source_name=raw.source_name,
                 source_reliability=raw.reliability_tier,
                 reliability=raw.reliability_tier,
-                commodity_type=None,
+                # MVP scope is India crude-oil import disruption (Planning
+                # Principle #2); every current Phase 1 source is
+                # crude-oil-relevant, so this is a safe default rather than
+                # leaving the field permanently unset. Multi-commodity
+                # adapters (Phase 14) will pass their own commodity_type
+                # instead of relying on this default.
+                commodity_type=CommodityType.CRUDE_OIL,
                 published_at=raw.published_at,
                 detected_at=raw.detected_at,
                 title=raw.title,
@@ -81,7 +120,7 @@ class DataNormalizer:
                 url=raw.url,
                 evidence_url=raw.url,
                 geo_hint=None,
-                corridor_hint=None,
+                corridor_hint=_detect_corridor_hint(raw),
                 country_hint=raw.location_name, # Map location_name to country_hint as best effort
                 is_simulated=True if raw.reliability_tier == SourceReliability.SIMULATED else False,
                 event_candidate=True,

@@ -216,13 +216,13 @@ class DigitalTwinService:
     def get_exposure_summary(self) -> Dict[str, Any]:
         """Calculates baseline deterministic exposure metrics."""
         supplier_exposure = sum(s.import_share_percent for s in self.suppliers.values())
-        
+
         # Route exposure (sum of import shares tied to that route)
         route_exposure = {}
         for sup in self.suppliers.values():
             if sup.default_shipping_route_id:
                 route_exposure[sup.default_shipping_route_id] = route_exposure.get(sup.default_shipping_route_id, 0) + sup.import_share_percent
-                
+
         # Chokepoint exposure
         chk_exposure = {}
         for route_id, share in route_exposure.items():
@@ -230,11 +230,26 @@ class DigitalTwinService:
             if route:
                 for chk_id in route.affected_chokepoint_ids:
                     chk_exposure[chk_id] = chk_exposure.get(chk_id, 0) + share
-                    
+            else:
+                logger.warning(
+                    "Supplier exposure references route '%s', which is not in the loaded route seed data.",
+                    route_id,
+                )
+
+        # Data-quality breakdown of the aggregate exposure percentages
+        # above, by each supplier's own `data_source` marking (plan Phase 2
+        # validation: "exposure percentages are marked as actual,
+        # estimated, or simulated").
+        exposure_by_data_source: Dict[str, float] = {}
+        for sup in self.suppliers.values():
+            key = "simulated" if sup.is_simulated else sup.data_source
+            exposure_by_data_source[key] = exposure_by_data_source.get(key, 0) + sup.import_share_percent
+
         return {
             "total_supplier_exposure_percent": supplier_exposure,
             "route_exposure_percent": route_exposure,
             "chokepoint_exposure_percent": chk_exposure,
+            "exposure_by_data_source": exposure_by_data_source,
             "total_refineries": len(self.refineries),
             "total_spr_capacity_mmbbl": sum(s.capacity_mmbbl or 0 for s in self.spr_sites.values())
         }

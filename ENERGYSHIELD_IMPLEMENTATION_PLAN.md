@@ -1060,11 +1060,113 @@ Phase 4's event extraction agent will call `relationship_builder.upsert_event_re
 
 ## Phase 4 Validation
 
-- [ ] Agent converts at least 20 seeded news/alert records into structured events.
-- [ ] Every event has event type, source, timestamp, severity, confidence, and affected entity.
-- [ ] Entity resolution links at least 80% of test events to a graph node.
-- [ ] LLM failure fallback produces valid schema output.
-- [ ] Frontend can show latest structured event feed.
+- [x] Agent converts at least 20 seeded news/alert records into structured events. (`backend/tests/agents/test_event_extraction_agent.py::test_extract_batch_converts_at_least_twenty_signals_with_high_resolution` runs 22 synthetic signals through `EventExtractionAgent.extract_batch` and asserts >=20 succeed.)
+- [x] Every event has event type, source, timestamp, severity, confidence, and affected entity. (Same test asserts `event_type`, `source_name`, `detected_at`, `severity` in 1-5, and `confidence` in 0-1 on every successfully extracted `RiskEvent`; `affected_entities` is populated whenever the signal's text resolves - see next bullet for the resolution rate.)
+- [x] Entity resolution links at least 80% of test events to a graph node. (Same test computes `resolution_rate = resolved / succeeded` over the 22-signal fixture and asserts `>= 0.8`; entity ids resolved by `EntityResolutionAgent` are the same `entity_id`s seeded into Neo4j by `graph/seed_graph.py`.)
+- [x] LLM failure fallback produces valid schema output. (`test_extract_falls_back_when_llm_returns_invalid_json` and `test_extract_falls_back_when_llm_omits_event_type` feed a fake Anthropic client invalid/incomplete responses and assert `extraction_method == "rule_based_fallback"` with a valid `RiskEvent` still produced.)
+- [x] Frontend can show latest structured event feed. (`GET /api/v1/events/latest` wired into `backend/main.py`; `frontend/src/api/energyShieldApi.js::getLatestEvents` and the "Phase 4 Latest Events" panel in `frontend/src/App.jsx` render it, with `mockLatestEvents` populated in `frontend/src/api/mockData.js` for the `VITE_USE_MOCK_DATA=true` default.)
+
+## Phase 4 Completion Status
+
+Status:
+✅ Completed
+
+Completion Date:
+2026-07-10
+
+Implementation Summary
+
+List every completed module:
+
+✓ backend/ml/event_classifier.py (new - event taxonomy, section 4.1)
+✓ backend/agents/entity_resolution_agent.py
+✓ backend/agents/event_extraction_agent.py
+✓ backend/services/event_service.py
+✓ backend/api/routes/events.py
+✓ prompts/risk_event_extraction.md
+✓ backend/main.py (wired the `events` router)
+✓ backend/tests/agents/test_event_classifier.py
+✓ backend/tests/agents/test_entity_resolution_agent.py
+✓ backend/tests/agents/test_event_extraction_agent.py
+✓ backend/tests/services/test_event_service.py
+✓ backend/tests/api/test_events.py
+✓ docs/API_REFERENCE.md (Events section flipped to Live)
+✓ frontend/src/api/energyShieldApi.js (added `getLatestEvents`)
+✓ frontend/src/api/mockData.js (populated `mockLatestEvents`)
+✓ frontend/src/App.jsx (added the Phase 4 Latest Events panel)
+
+New Features Added
+
+• Deterministic event taxonomy: keyword-to-event-type rules, per-type severity
+  base with intensity adjustment, and chokepoint/event-type -> MVP scenario
+  trigger mapping
+• Entity resolution against the Phase 2 Digital Twin's in-memory seed data
+  (chokepoints, suppliers, refineries, import ports, routes), with a
+  hand-curated alias table for common news shorthand (e.g. "Hormuz", "Red
+  Sea"), chokepoint-to-route expansion, and chokepoint-polygon-centroid
+  coordinate resolution
+• Three-path extraction pipeline - `official_alert_direct` (deterministic
+  rules for OFFICIAL/HIGH sources), `llm` (Anthropic client, only attempted
+  when configured), and `rule_based_fallback` (same deterministic rules,
+  used whenever the LLM is unavailable or its output fails schema
+  validation) - so a missing API key or a bad LLM response never breaks
+  the pipeline
+• Confidence scoring from source reliability, resolved-location/entity
+  presence, and a simulated-data cap (section 4.4)
+- `GET /api/v1/events/latest` and `GET /api/v1/events/{event_id}`, backed by
+  an in-memory `EventService` and a pipeline that runs the six Phase 1
+  collectors through the normalizer and extraction agent once at import
+  time - the same load-once-at-import pattern `digital_twin.py` already uses
+- Every extracted event is pushed into the knowledge graph via
+  `graph.relationship_builder.upsert_event_relationships`, the Phase 3
+  integration point that had been unused until now
+
+Architecture Improvements
+
+Event extraction closes the loop the Phase 3 completion notes called out as
+still open: `NormalizedSignal` records now flow all the way through to
+graph `AFFECTS` edges without any manual step. Because entity resolution
+runs against the Digital Twin's in-memory data rather than requiring a live
+graph query, the whole pipeline (ingestion -> normalize -> extract -> graph
+link) degrades gracefully with no Neo4j running, matching the
+already-established `KGClient` graceful-degradation contract.
+
+Lessons Learned
+
+- why entity resolution matches against `DigitalTwinService` instead of
+  querying Neo4j: extraction must stay testable and functional without a
+  live graph database, exactly like ingestion collectors and `KGClient`
+  already do; the resolved ids are identical to what `seed_graph.py` loads,
+  so `relationship_builder.upsert_event_relationships` still links correctly
+  once a real graph is running.
+- why confidence and scenario triggers are always computed deterministically,
+  even on the `llm` path: the plan's confidence formula (section 4.4) is
+  about source reliability and corroboration, not the model's self-rated
+  confidence, and scenario triggers depend on knowledge-graph structure the
+  LLM has no visibility into - only `event_type`, `title`, `summary`, and
+  `severity` are taken from the model's output.
+- why the "at least 20 records" and "80% resolution" checkpoints are
+  validated with a synthetic 22-signal test fixture rather than the live
+  Phase 1 collectors: each seeded collector still returns exactly one demo
+  record (by design, from Phase 1), so proving the checkpoints against the
+  live pipeline would either require inflating Phase 1's owned seed data or
+  accepting a thin, unrepresentative demo feed; a dedicated test fixture
+  proves the extraction agent's actual capability independent of how many
+  demo records Phase 1 happens to seed today.
+- Testing caveat: this environment has no running Neo4j instance, so the
+  events pipeline's graph-write step was verified via the existing
+  mocked-`KGClient` test pattern (`relationship_builder` tests) plus manual
+  import-time verification showing graceful `AFFECTS`-edge-skip warnings
+  logged instead of a crash. Run against a live Neo4j (`docker compose up
+  neo4j`) to confirm real edges are created end-to-end.
+
+Future Integration
+
+Phase 5's risk scoring engine can read the same `RiskEvent.severity`,
+`source_reliability`, and graph `AFFECTS` edges this phase now produces
+instead of needing its own event ingestion. Phase 6's scenario engine can
+key off `RiskEvent.scenario_triggers` directly rather than re-deriving
+trigger conditions from raw event data.
 
 ---
 
@@ -1178,11 +1280,99 @@ Risk Score =
 
 ## Phase 5 Validation
 
-- [ ] Risk score changes when a high-severity event is added.
-- [ ] Risk score decreases when event is resolved or expires.
-- [ ] Top drivers are understandable to a non-technical user.
-- [ ] Graph nodes show latest risk score.
-- [ ] Risk history is stored for trend charts and continuous learning.
+- [x] Risk score changes when a high-severity event is added. (`backend/tests/risk/test_risk_scoring_engine.py::test_score_corridor_risk_increases_with_high_severity_event` and `backend/tests/services/test_risk_service.py::test_score_changes_when_high_severity_event_added` inject a severity-5 event and assert the recomputed score rises.)
+- [x] Risk score decreases when event is resolved or expires. (`test_risk_service.py::test_score_decreases_when_event_resolved` adds an event, confirms the score rises, then clears it via `EventService.replace_all([])` and confirms the score falls back down.)
+- [x] Top drivers are understandable to a non-technical user. (`risk_scoring_engine._build_top_drivers` emits plain-language strings like "High-severity event: Maritime security incident reported in this corridor" and "High India crude import exposure via this entity (62.4% of imports)" rather than raw feature names.)
+- [x] Graph nodes show latest risk score. (`backend/graph/risk_graph_updater.py::update_risk_score` `SET`s `risk_score`/`risk_level`/`last_risk_update` on the matching graph node, called from `RiskService.refresh()` whenever a score changes; verified against a fake `KGClient` in `backend/tests/graph/test_risk_graph_updater.py`.)
+- [x] Risk history is stored for trend charts and continuous learning. (`RiskService` keeps a per-entity history list that only grows on an actual score change - `test_risk_service.py::test_history_grows_only_on_actual_change` - queryable via `GET /api/v1/risk/history/{entity_id}`.)
+
+## Phase 5 Completion Status
+
+Status:
+✅ Completed
+
+Completion Date:
+2026-07-10
+
+Implementation Summary
+
+List every completed module:
+
+✓ backend/risk/exposure_model.py
+✓ backend/risk/reliability_model.py
+✓ backend/risk/anomaly_model.py
+✓ backend/risk/risk_scoring_engine.py
+✓ backend/graph/risk_graph_updater.py
+✓ backend/services/risk_service.py (replaced the earlier static-mock version with real computation)
+✓ backend/api/routes/risk.py (wired the live Phase 4 event feed in; endpoints themselves were already frozen and unchanged)
+✓ backend/api/routes/events.py (added `get_event_service()` so Phase 5 can read the live event set without re-running ingestion)
+✓ backend/tests/risk/test_exposure_model.py
+✓ backend/tests/risk/test_reliability_model.py
+✓ backend/tests/risk/test_anomaly_model.py
+✓ backend/tests/risk/test_risk_scoring_engine.py
+✓ backend/tests/graph/test_risk_graph_updater.py
+✓ backend/tests/services/test_risk_service.py
+✓ backend/tests/api/test_risk.py (fixed one assertion that only held against the old mock's fabricated history trend)
+
+New Features Added
+
+• Corridor risk scoring (5.1) for every chokepoint and shipping route, from
+  live `RiskEvent`s grouped by `affected_entities`, graph-equivalent import
+  exposure, AIS/congestion anomaly signals, and a market-wide price-spike
+  term
+• Supplier risk scoring (5.2) that inherits risk from a supplier's default
+  shipping route in addition to events resolved directly to the supplier
+• Refinery exposure scoring (5.3): refineries reachable from a stressed
+  chokepoint's routes, weighted by each refinery's share of total Indian
+  refining capacity
+• Knowledge-graph risk push (5.4): every changed score updates its graph
+  node's `risk_score`/`risk_level`, plus a `RiskScoreSnapshot` history node
+  linked back to its evidence events via `EVIDENCED_BY`
+• Change-triggered risk history per entity, so `GET /risk/history/{id}`
+  reflects genuine score movements instead of a fabricated demo trend
+
+Architecture Improvements
+
+Exposure figures are computed from the Phase 2 `DigitalTwinService`
+in-memory data rather than live Neo4j queries - the same
+graceful-degradation choice Phase 4's `EntityResolutionAgent` made - so
+risk scores stay available with no graph database running. The numbers
+are identical either way since `graph/seed_graph.py` loads the graph from
+this same digital-twin data. `RiskService` recomputes on every read rather
+than via a background loop, since no Phase 10 scheduler exists yet; this
+is simpler and just as correct while the event set only changes when the
+Phase 4 pipeline re-runs.
+
+Lessons Learned
+
+- why `RiskService` reads events through `api.routes.events.get_event_service()`
+  rather than re-running ingestion itself: Phase 5 explicitly depends on
+  "Phase 4 event extraction working" per the plan's prerequisite - reusing
+  the same live event set (instead of a second independent fetch) keeps
+  risk scores consistent with whatever `/events/latest` is currently
+  showing.
+- why a commodity price spike lifts every corridor/supplier's score
+  uniformly instead of only the entity a `PRICE_SPIKE` event happens to
+  resolve against: the commodity price collector has no specific
+  corridor/supplier to attach a global price move to (its signals carry no
+  location hint), so treating it as market-wide pressure is more honest
+  than pretending it's evidence for one entity.
+- why risk history only grows when the score actually changes, not on
+  every read: `RiskService.get_corridors()`/`get_suppliers()` recompute on
+  every call (no caching layer yet), so appending unconditionally would
+  flood history with identical duplicate entries between real events.
+- Testing caveat: as with Phase 3's graph writes, this sandbox has no
+  running Neo4j instance, so `risk_graph_updater`'s Cypher was verified
+  against a mocked `KGClient` (`backend/tests/graph/test_risk_graph_updater.py`)
+  and via observing graceful "unknown entity, node update skipped" warnings
+  during a real app boot, not against a live graph.
+
+Future Integration
+
+Phase 6's scenario engine can read `RiskScore.risk_level`/`top_drivers`
+directly instead of re-deriving corridor stress from raw events. Phase 7's
+procurement/SPR agents can use the same supplier and refinery scores this
+phase now produces for feasibility ranking.
 
 ---
 

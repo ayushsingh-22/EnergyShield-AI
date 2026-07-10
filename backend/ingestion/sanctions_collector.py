@@ -12,22 +12,76 @@ from models.data_source_schema import RawSourceRecord
 
 logger = logging.getLogger(__name__)
 
+# Seeded sanctions list snapshot - stands in for a live OFAC/EU/UN pull per
+# the Phase 1 fallback contract. Each entry is one sanctioned entity as it
+# would appear in a real list snapshot (plan section 1.4, step 1).
+_SEEDED_SANCTIONS_SNAPSHOT = [
+    {
+        "entity_id": "SANC_DELTA_SHIPPING",
+        "name": "Delta Shipping Ltd",
+        "country": "Global",
+        "list_type": "OFAC_SDN",
+        "effective_date": "2026-07-01",
+    },
+    {
+        "entity_id": "SANC_NORTHLINE_TANKERS",
+        "name": "Northline Tankers Co",
+        "country": "Global",
+        "list_type": "OFAC_SDN",
+        "effective_date": "2026-07-05",
+    },
+    {
+        "entity_id": "SANC_PETROCARRY",
+        "name": "Petrocarry Logistics",
+        "country": "Global",
+        "list_type": "EU_SANCTIONS",
+        "effective_date": "2026-07-08",
+    },
+]
+
+
 class SanctionsCollector(BaseCollector):
     def __init__(self):
         super().__init__(source_name="sanctions")
         self.reliability = get_source_reliability(self.source_name)
+        # Entities already surfaced by a previous fetch() on *this instance*
+        # (plan section 1.4, step 2: "detect new records compared with
+        # previous snapshot"). Kept per-instance rather than at module scope
+        # so two independent consumers (e.g. the data-freshness bootstrap
+        # and the events pipeline, each holding their own collector
+        # instance) both see the full snapshot on their own first poll
+        # instead of racing each other for who "claims" the delta.
+        self._previous_snapshot_entity_ids: set[str] = set()
 
     def fetch(self) -> List[RawSourceRecord]:
         try:
+            new_entities = [
+                entity
+                for entity in _SEEDED_SANCTIONS_SNAPSHOT
+                if entity["entity_id"] not in self._previous_snapshot_entity_ids
+            ]
+            self._previous_snapshot_entity_ids.update(
+                entity["entity_id"] for entity in _SEEDED_SANCTIONS_SNAPSHOT
+            )
+
+            if not new_entities:
+                logger.info("No new sanctions entries since last snapshot for %s", self.source_name)
+                return []
+
+            # step 3: emit SANCTION_UPDATE candidate signals for each delta
             seeded_data = [
                 {
-                    "title": "OFAC Sanctions Update: Shipping Entities",
-                    "summary": "New sanctions placed on shipping companies involved in illicit crude transport.",
-                    "url": "https://example.com/sanctions/update",
+                    "title": f"Sanctions update: {entity['name']}",
+                    "summary": (
+                        f"{entity['name']} ({entity['country']}) added to the {entity['list_type']} list, "
+                        f"effective {entity['effective_date']}."
+                    ),
+                    "url": f"https://example.com/sanctions/{entity['entity_id'].lower()}",
                     "language": "en",
-                    "location_name": "Global",
-                    "published_at": datetime.now(timezone.utc).isoformat()
+                    "location_name": entity["country"],
+                    "published_at": datetime.now(timezone.utc).isoformat(),
                 }
+                for entity in new_entities
             ]
             return self.normalize(seeded_data)
         except Exception as e:

@@ -1,6 +1,9 @@
+import ProjectBrand from '../components/layout/ProjectBrand'
+
 export default function KnowledgeGraphExplorer() {
   return (
     <div className="page page-knowledge-graph-explorer">
+      <ProjectBrand compact subtitle="Graph intelligence" />
       <h1>Knowledge Graph Explorer</h1>
       <p>
         TODO(Phase 9): Shows relationship paths such as Supplier to Export
