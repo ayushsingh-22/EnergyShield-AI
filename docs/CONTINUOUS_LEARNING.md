@@ -51,9 +51,10 @@ Disruption Case Library
 }
 ```
 
-`data/seeds/demo_disruption_cases.json` seeds three illustrative cases
+`data/seeds/demo_disruption_cases.json` seeds five illustrative cases
 built around real disruptions (2023-24 Red Sea/Houthi attacks, 2019 Hormuz
-tanker incidents, 2022 post-invasion Russian crude reroute) with
+tanker incidents, 2022 post-invasion Russian crude reroute, 2008-11 Gulf of
+Aden piracy surge, 2021 Suez Canal/Ever Given blockage) with
 `is_simulated: true` and source notes stating the outcome figures are
 illustrative, not audited historical statistics - consistent with Planning
 Principle #9.

@@ -1,0 +1,54 @@
+# Production-oriented overlay for the root docker-compose.yml (Phase 12,
+# section "Deployment config"). Local dev bind-mounts source code and
+# runs `uvicorn --reload`/the Vite dev server; this variant instead
+# builds immutable images and requires every secret to come from the
+# environment (no defaults) so it fails loudly instead of silently
+# running with a demo password.
+#
+# Usage: from the repo root,
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up --build -d
+
+services:
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required in production}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required in production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in production}
+    # `!reset` (not a plain `[]`) - Compose merges list fields like `ports`
+    # by union with the base file by default, so an empty list here would
+    # silently be a no-op; `!reset` is the Compose Specification tag that
+    # actually clears the base file's list instead of appending to it.
+    ports: !reset []  # do not expose the database port on the host in production
+
+  neo4j:
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:?NEO4J_USER is required}/${NEO4J_PASSWORD:?NEO4J_PASSWORD is required}
+    # `!override` (not `!reset`) - this field should end up as exactly this
+    # one-item list (bolt only, dropping the 7474 browser UI port), not
+    # cleared to empty or unioned with the base file's two ports.
+    ports: !override
+      - "7687:7687"
+
+  redis:
+    ports: !reset []  # internal only
+
+  backend:
+    build:
+      context: ../backend
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      NEO4J_URI: bolt://neo4j:7687
+      REDIS_URL: redis://redis:6379/0
+    volumes: !reset []  # no source bind-mount; run the image as built
+    restart: always
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+        VITE_USE_MOCK_DATA: "false"
+    volumes: !reset []
+    restart: always

@@ -10,10 +10,16 @@ from fastapi import APIRouter, HTTPException
 
 from api.routes.recommendations import _recommendation_service
 from api.routes.scenarios import service as scenario_service
+from commodities.base_adapter import CommodityAdapter
+from commodities.coal_adapter import CoalAdapter
+from commodities.critical_minerals_adapter import CriticalMineralsAdapter
+from commodities.crude_oil_adapter import CrudeOilAdapter
+from commodities.fertilizer_adapter import FertilizerAdapter
+from commodities.lng_adapter import LngAdapter
 from models.commodity_schema import CommodityDefinition
 from models.core_schema import CommodityType, EntityType, RiskLevel
 from models.risk_schema import RiskScore
-from models.scenario_schema import ScenarioRequest, ScenarioResult, ScenarioType
+from models.scenario_schema import ScenarioRequest, ScenarioResult
 from services.digital_twin_service import DigitalTwinService
 from services.risk_service import RiskService
 
@@ -23,22 +29,21 @@ _digital_twin = DigitalTwinService()
 _digital_twin.load_seed_data()
 _DATA_FILE = Path(__file__).resolve().parents[3] / "data" / "seeds" / "commodity_definitions.yaml"
 
+# One `CommodityAdapter` per commodity (Phase 14, section 14.2) - the risk
+# engine, scenario engine, and recommendation agents call these adapters'
+# four methods rather than branching on commodity type internally
+# (docs/MULTI_COMMODITY_ROADMAP.md).
+_ADAPTERS: dict[CommodityType, CommodityAdapter] = {
+    CommodityType.CRUDE_OIL: CrudeOilAdapter(_digital_twin),
+    CommodityType.LNG: LngAdapter(),
+    CommodityType.COAL: CoalAdapter(),
+    CommodityType.FERTILIZER: FertilizerAdapter(),
+    CommodityType.CRITICAL_MINERALS: CriticalMineralsAdapter(),
+}
+
 
 def _scenario_templates_for(commodity_type: CommodityType) -> list[str]:
-    mapping = {
-        CommodityType.CRUDE_OIL: [
-            ScenarioType.HORMUZ_PARTIAL_CLOSURE.value,
-            ScenarioType.RED_SEA_SHIPPING_DISRUPTION.value,
-            ScenarioType.OPEC_SUPPLY_CUT.value,
-            ScenarioType.SANCTIONS_SHOCK.value,
-            ScenarioType.PORT_CONGESTION.value,
-        ],
-        CommodityType.LNG: [ScenarioType.LNG_SUPPLY_SHOCK.value],
-        CommodityType.COAL: [ScenarioType.COAL_IMPORT_DISRUPTION.value],
-        CommodityType.FERTILIZER: [ScenarioType.FERTILIZER_FEEDSTOCK_SHOCK.value],
-        CommodityType.CRITICAL_MINERALS: [ScenarioType.CRITICAL_MINERAL_EXPORT_RESTRICTION.value],
-    }
-    return mapping[commodity_type]
+    return _ADAPTERS[commodity_type].get_scenario_templates()
 
 
 def _load_definitions() -> dict[CommodityType, CommodityDefinition]:
@@ -90,18 +95,11 @@ def list_commodities() -> list[CommodityDefinition]:
 
 @router.get("/{commodity_type}/entities")
 def get_commodity_entities(commodity_type: CommodityType) -> dict[str, object]:
-    if commodity_type is CommodityType.CRUDE_OIL:
-        return {
-            "commodity_type": commodity_type,
-            "suppliers": [supplier.model_dump() for supplier in _digital_twin.get_suppliers()],
-            "routes": [route.model_dump() for route in _digital_twin.get_routes()],
-            "refineries": [refinery.model_dump() for refinery in _digital_twin.get_refineries()],
-        }
+    entities = _ADAPTERS[commodity_type].get_supply_chain_entities()
     return {
         "commodity_type": commodity_type,
-        "status": "roadmap",
-        "scenario_templates": _scenario_templates_for(commodity_type),
-        "note": "Schema and templates exist, but commodity-specific entities are not wired to live ingestion yet.",
+        "entity_count": len(entities),
+        "entities": entities,
     }
 
 

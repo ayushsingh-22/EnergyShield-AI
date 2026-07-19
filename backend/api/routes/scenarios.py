@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from api.routes.audit import get_audit_service
 from models.scenario_schema import ScenarioRequest, ScenarioResult
 from services.scenario_service import ScenarioService
 
 router = APIRouter(prefix="/api/v1/scenarios", tags=["scenarios"])
-service = ScenarioService()
+service = ScenarioService(audit_service=get_audit_service())
 
 
 @router.post("/run", response_model=ScenarioResult)

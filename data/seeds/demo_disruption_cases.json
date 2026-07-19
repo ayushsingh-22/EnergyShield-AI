@@ -49,5 +49,39 @@
     },
     "source_notes": "Directionally based on the widely reported shift of India's crude import mix toward discounted Russian Urals following Western sanctions after February 2022; exact tanker/route/cost figures are simulated and illustrative for this prototype, not drawn from a single audited source.",
     "is_simulated": true
+  },
+  {
+    "case_id": "CASE-ADEN-PIRACY-2008-001",
+    "case_name": "Gulf of Aden / Bab el-Mandeb Somali piracy surge",
+    "commodity_type": "CRUDE_OIL",
+    "start_date": "2008-01-01",
+    "end_date": "2011-12-31",
+    "trigger_events": ["MARITIME_ATTACK", "CHOKEPOINT_CONGESTION"],
+    "affected_corridors": ["BAB_EL_MANDEB"],
+    "observed_outcomes": {
+      "average_delay_days": 6,
+      "freight_cost_increase_percent": 10,
+      "route_shift_detected": true,
+      "price_movement_percent": 3
+    },
+    "source_notes": "Directionally based on public reporting of the multi-year Somali piracy surge in the Gulf of Aden and Bab el-Mandeb approach, which raised insurance premiums and pushed some carriers toward escort convoys or rerouting; outcome figures here are illustrative and simulated for this prototype, not audited historical statistics.",
+    "is_simulated": true
+  },
+  {
+    "case_id": "CASE-SUEZ-EVERGIVEN-2021-001",
+    "case_name": "Suez Canal blockage (Ever Given grounding)",
+    "commodity_type": "CRUDE_OIL",
+    "start_date": "2021-03-23",
+    "end_date": "2021-03-29",
+    "trigger_events": ["CHOKEPOINT_CONGESTION", "WEATHER_DISRUPTION"],
+    "affected_corridors": ["SUEZ"],
+    "observed_outcomes": {
+      "average_delay_days": 6,
+      "freight_cost_increase_percent": 7,
+      "route_shift_detected": false,
+      "price_movement_percent": 4
+    },
+    "source_notes": "Directionally based on public reporting of the six-day Suez Canal closure after the Ever Given grounding in March 2021, which backed up several hundred vessels; outcome figures here are illustrative and simulated for this prototype's calibration purposes, not drawn from a single audited source.",
+    "is_simulated": true
   }
 ]

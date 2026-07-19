@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -117,3 +118,23 @@ class AuditableMixin(EnergyShieldBaseModel):
     confidence: float = Field(..., ge=0.0, le=1.0)
     assumptions: list[Assumption] = Field(default_factory=list)
     audit_id: str | None = None
+
+
+class AuditEvent(EnergyShieldBaseModel):
+    """One immutable audit trail entry (Phase 8 persistence / Phase 11
+    explainability), backing `GET /api/v1/audit/{entity_id}`. Recorded for
+    every event, scenario, recommendation, and report the platform
+    produces (Planning Principle: every recommendation/output must be
+    explainable and traceable). Matches the "Audit Event Schema" in
+    ENERGYSHIELD_IMPLEMENTATION_PLAN.md Phase 11."""
+
+    audit_id: str
+    entity_id: str
+    entity_type: str
+    action: str
+    actor: str = "system"
+    timestamp: datetime
+    source_event_ids: list[str] = Field(default_factory=list)
+    model_version: str | None = None
+    summary: str
+    details: dict[str, Any] = Field(default_factory=dict)

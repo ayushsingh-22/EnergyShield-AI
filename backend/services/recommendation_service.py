@@ -4,14 +4,26 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from models.core_schema import ActionPriority, Assumption, RiskLevel
-from models.recommendation_schema import ProcurementOption, Recommendation, SprPlan
+from agents.procurement_agent import ProcurementAgent
+from agents.spr_agent import SprAgent
+from models.core_schema import Assumption
+from models.recommendation_schema import Recommendation
 from models.scenario_schema import ScenarioResult
+from services.audit_service import AuditService
+from storage import repository
 
 
 class RecommendationService:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        procurement_agent: ProcurementAgent | None = None,
+        spr_agent: SprAgent | None = None,
+        audit_service: AuditService | None = None,
+    ) -> None:
         self._recommendations: dict[str, Recommendation] = {}
+        self._procurement_agent = procurement_agent or ProcurementAgent()
+        self._spr_agent = spr_agent or SprAgent()
+        self._audit_service = audit_service
 
     def get_recommendation(self, scenario_id: str) -> Recommendation | None:
         return self._recommendations.get(scenario_id)
@@ -21,48 +33,64 @@ class RecommendationService:
         if existing is not None:
             return existing
 
-        drawdown_required = scenario.supply_at_risk_percent >= 25 or scenario.estimated_delay_days >= 10
+        ranked_options = self._procurement_agent.recommend(scenario)
+        spr_plan = self._spr_agent.recommend(scenario)
+
+        assumptions = [
+            Assumption(
+                description="Procurement ranking uses the Phase 7 scoring formula over digital-twin/graph data.",
+                is_simulated=False,
+            ),
+            Assumption(
+                description=(
+                    "Exact tanker availability, cargo ownership, and refinery-grade compatibility "
+                    "remain simulated pending live contract data."
+                ),
+                is_simulated=True,
+            ),
+        ]
+        if not ranked_options:
+            assumptions.append(
+                Assumption(
+                    description="No alternative suppliers could be resolved from the digital twin or graph for this scenario.",
+                    is_simulated=True,
+                )
+            )
+
+        # Recommendation confidence is capped by the scenario's own
+        # confidence (a recommendation can't be more certain than the
+        # scenario it's based on) and by how feasible the ranked options
+        # actually are.
+        option_feasibility = (
+            sum(option.feasibility_score for option in ranked_options) / len(ranked_options)
+            if ranked_options
+            else 0.5
+        )
+        confidence = round(min(scenario.confidence, option_feasibility), 2)
+        recommendation_id = f"REC-{scenario.scenario_id}"
+
+        audit_id = f"AUD-REC-{scenario.scenario_id}"
+        if self._audit_service is not None:
+            audit_event = self._audit_service.record_event(
+                entity_id=recommendation_id,
+                entity_type="RECOMMENDATION",
+                action="RECOMMENDATION_GENERATED",
+                summary=f"Generated {len(ranked_options)} procurement option(s) for {scenario.scenario_id}.",
+                details={"confidence": confidence, "spr_drawdown_required": spr_plan.drawdown_required},
+            )
+            audit_id = audit_event.audit_id
+
         recommendation = Recommendation(
-            recommendation_id=f"REC-{scenario.scenario_id}",
+            recommendation_id=recommendation_id,
             scenario_id=scenario.scenario_id,
             commodity_type=scenario.commodity_type,
-            ranked_options=[
-                ProcurementOption(
-                    rank=1,
-                    supplier="Saudi Arabia",
-                    route="East-West corridor to west coast India",
-                    estimated_delay_days=max(2.0, scenario.estimated_delay_days - 4.0),
-                    cost_impact_percent=max(1.0, scenario.freight_cost_impact_percent - 3.0),
-                    risk_level=RiskLevel.MEDIUM,
-                    feasibility_score=0.82,
-                    reason="Largest near-term alternative with strong crude substitution fit in the seeded demo set.",
-                    action_priority=ActionPriority.IMMEDIATE if scenario.recommended_action_required else ActionPriority.MONITOR,
-                ),
-                ProcurementOption(
-                    rank=2,
-                    supplier="United Arab Emirates",
-                    route="Murban-linked Gulf route with monitored exposure",
-                    estimated_delay_days=max(3.0, scenario.estimated_delay_days - 2.0),
-                    cost_impact_percent=max(2.0, scenario.freight_cost_impact_percent - 1.5),
-                    risk_level=RiskLevel.MEDIUM,
-                    feasibility_score=0.74,
-                    reason="Good quality compatibility but still partially exposed to Gulf chokepoint conditions.",
-                    action_priority=ActionPriority.CONTINGENCY,
-                ),
-            ],
-            spr_plan=SprPlan(
-                drawdown_required=drawdown_required,
-                start_day=3 if drawdown_required else None,
-                drawdown_percent=18.0 if drawdown_required else None,
-                reason="Triggered when simulated disruption exceeds the pre-set supply-at-risk and delay thresholds." if drawdown_required else "Scenario remains manageable through procurement rerouting alone.",
-            ),
-            confidence=0.79,
-            assumptions=[
-                Assumption(description="Recommendation ranking is a deterministic heuristic using delay, cost, and route exposure.", is_simulated=True),
-                Assumption(description="Supplier compatibility and SPR drawdown limits remain mocked until optimizer integration.", is_simulated=True),
-            ],
-            audit_id=f"AUD-REC-{scenario.scenario_id}",
+            ranked_options=ranked_options,
+            spr_plan=spr_plan,
+            confidence=confidence,
+            assumptions=assumptions,
+            audit_id=audit_id,
             created_at=datetime.now(timezone.utc),
         )
         self._recommendations[scenario.scenario_id] = recommendation
+        repository.save_recommendation(recommendation.recommendation_id, scenario.scenario_id, recommendation.model_dump_json())
         return recommendation

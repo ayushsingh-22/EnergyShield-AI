@@ -5,12 +5,13 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from api.routes.audit import get_audit_service
 from api.routes.recommendations import _recommendation_service
 from api.routes.scenarios import service as scenario_service
 from services.report_service import ReportService
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
-_report_service = ReportService()
+_report_service = ReportService(audit_service=get_audit_service())
 
 
 class ReportRequest(BaseModel):

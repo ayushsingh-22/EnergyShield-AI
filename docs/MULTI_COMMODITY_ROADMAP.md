@@ -8,9 +8,16 @@ commodities are added as adapters, not new codebases.
 
 ## Current Status
 
-Only `CRUDE_OIL` is implemented today. `LNG`, `COAL`, `FERTILIZER`, and
-`CRITICAL_MINERALS` are roadmap - see `data/seeds/commodity_definitions.yaml`
-for the same status flags in machine-readable form.
+All five `CommodityAdapter` implementations exist. `CRUDE_OIL` wraps the
+real Phase 2-7 digital twin/risk/scenario data; `LNG`, `COAL`,
+`FERTILIZER`, and `CRITICAL_MINERALS` ship a small illustrative
+supply-chain entity set (every entity marked `is_simulated: true`) since
+live ingestion for those commodities is not built yet - see
+`data/seeds/commodity_definitions.yaml` for the same status flags in
+machine-readable form. All four non-crude commodities already have at
+least one scenario template (`backend/scenarios/templates/`), satisfying
+the Phase 14 validation checklist item independent of when their live
+ingestion lands.
 
 ## The `CommodityAdapter` Interface
 
@@ -57,17 +64,22 @@ files - it should not require touching `backend/risk/`,
 
 | Order | Commodity | Adapter | Status |
 | --- | --- | --- | --- |
-| 1 | Crude oil | `crude_oil_adapter.py` | Implemented (MVP) |
-| 2 | LNG | `lng_adapter.py` | Roadmap |
-| 3 | Coal | `coal_adapter.py` | Roadmap |
-| 4 | Fertilizer | `fertilizer_adapter.py` | Roadmap |
-| 5 | Critical minerals | `critical_minerals_adapter.py` | Roadmap |
+| 1 | Crude oil | `crude_oil_adapter.py` | Implemented (MVP, real data) |
+| 2 | LNG | `lng_adapter.py` | Implemented (illustrative entities) |
+| 3 | Coal | `coal_adapter.py` | Implemented (illustrative entities) |
+| 4 | Fertilizer | `fertilizer_adapter.py` | Implemented (illustrative entities) |
+| 5 | Critical minerals | `critical_minerals_adapter.py` | Implemented (illustrative entities) |
 
-Rollout is sequential and gated: Phase 14 validation requires the crude-oil
-MVP to keep working after the adapter abstraction is introduced, and at
+Rollout was sequential and gated: Phase 14 validation required the crude-oil
+MVP to keep working after the adapter abstraction was introduced, and at
 least one non-crude commodity to load entities and risk cards before the
-next is started, to avoid the risk-register concern that "multi-commodity
-expansion breaks crude MVP."
+next was started, to avoid the risk-register concern that "multi-commodity
+expansion breaks crude MVP." `backend/tests/commodities/test_adapters.py`
+parametrizes the same shape checks across all five adapters.
+
+Bringing a commodity from "illustrative entities" to "live ingestion" means
+replacing that adapter's hardcoded entity list with real collectors/seed
+data - the adapter interface itself does not change.
 
 ## Commodity-by-Commodity Plan
 
@@ -129,15 +141,27 @@ supplier concentration risk, sanctions/geopolitical escalation
 
 ## Cross-Commodity Cascade Engine (Phase 14.7, lower priority)
 
-Once at least two non-crude adapters exist, a cascade layer models how a
-shock in one commodity propagates into another - for example an LNG price
-spike raising fertilizer production cost, a coal import disruption
-stressing the power sector, a critical mineral export restriction slowing
-EV manufacturing, or a crude oil disruption raising transport/logistics
-costs across every other commodity. This is documented as a heuristic
-cross-reference table initially, not a full simulation, per the Phase 14
-validation checklist ("Cross-commodity cascade logic is documented, even
-if initially heuristic").
+A cascade layer models how a shock in one commodity propagates into
+another. Per the Phase 14 validation checklist ("Cross-commodity cascade
+logic is documented, even if initially heuristic"), this is a heuristic
+cross-reference table today, not a simulation - no code computes these
+multipliers yet; a future `backend/scenarios/cascade_engine.py` would read
+this same table.
+
+| Source shock | Affected commodity | Heuristic impact |
+| --- | --- | --- |
+| LNG spot price spike | Fertilizer | Natural-gas feedstock cost rises roughly in proportion to the LNG price move; urea production cost pressure follows within the same quarter |
+| Coal import disruption | Crude oil / all commodities | Power-sector stress increases refinery/processing electricity cost and can accelerate diesel genset demand |
+| Critical mineral export restriction | Crude oil (indirect) | Slower EV manufacturing keeps oil-linked transport-fuel demand elevated for longer than it otherwise would be |
+| Crude oil disruption (chokepoint closure) | LNG, coal, fertilizer | Shared tanker/freight market tightens, raising shipping cost and delay estimates across every other commodity's routes |
+| Fertilizer feedstock shock | Crude oil (indirect) | Higher ammonia/urea cost pressures agricultural input costs, an indirect food-security signal rather than a direct energy one |
+
+Applying a row today means manually adjusting a downstream scenario's
+`manual_overrides` (e.g. bump `freight_cost_increase_percent` for a coal
+scenario after a crude chokepoint closure) rather than an automatic
+trigger - the automatic version is future work once at least one cascade
+row has been validated against a real historical case in
+`backend/learning/disruption_case_library.py`.
 
 ## Frontend and API Surface
 

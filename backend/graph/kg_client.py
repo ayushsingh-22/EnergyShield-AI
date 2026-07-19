@@ -28,11 +28,19 @@ class KGClient:
         password: str | None = None,
         database: str | None = None,
         unavailable_retry_seconds: float = 30.0,
+        connection_timeout_seconds: float = 3.0,
     ):
         self.uri = uri or os.getenv("NEO4J_URI", "bolt://localhost:7687")
         self.user = user or os.getenv("NEO4J_USER", "neo4j")
         self.password = password or os.getenv("NEO4J_PASSWORD", "")
         self.database = database or os.getenv("NEO4J_DATABASE", "neo4j")
+        # The driver's own default connection timeout is tens of seconds
+        # (meant for real network hiccups against a server that's actually
+        # up); every API request that touches the graph would otherwise
+        # block that long before falling back, whenever Neo4j simply isn't
+        # running yet. A few seconds is enough to distinguish "unreachable"
+        # from "slow" while keeping graceful degradation actually graceful.
+        self._connection_timeout_seconds = connection_timeout_seconds
         self._driver = None
         # Once a connection attempt fails, every caller in the process
         # (dozens of run_query calls per event/risk-score pipeline run)
@@ -46,7 +54,11 @@ class KGClient:
 
     def _get_driver(self):
         if self._driver is None:
-            self._driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
+            self._driver = GraphDatabase.driver(
+                self.uri,
+                auth=(self.user, self.password),
+                connection_timeout=self._connection_timeout_seconds,
+            )
         return self._driver
 
     def _in_backoff(self) -> bool:
