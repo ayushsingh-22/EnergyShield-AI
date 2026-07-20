@@ -151,6 +151,31 @@ def get_refineries():
 def get_spr_sites():
     return service.get_spr_sites()
 
+@router.get("/names")
+def get_entity_names() -> Dict[str, str]:
+    """Flat `{entity_id: display_name}` map across every entity type
+    (suppliers, ports, routes, chokepoints, refineries, SPR sites).
+
+    Lets the frontend render human-readable names anywhere it otherwise
+    only has an entity id (e.g. risk cards keyed by `CHK_HORMUZ`, affected
+    refineries keyed by `REF_JAM`) without changing any existing response
+    schema. Covers suppliers too, which `/map` omits because they have no
+    geometry."""
+    names: Dict[str, str] = {}
+    for collection in (
+        service.suppliers,
+        service.export_ports,
+        service.import_ports,
+        service.refineries,
+        service.spr_sites,
+        service.routes,
+        service.chokepoints,
+    ):
+        for entity_id, entity in collection.items():
+            names[entity_id] = getattr(entity, "name", entity_id)
+    return names
+
+
 @router.get("/exposure")
 def get_exposure():
     return service.get_exposure_summary()

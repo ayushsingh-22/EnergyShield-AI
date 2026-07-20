@@ -44,12 +44,16 @@ def test_scenario_uses_graph_relationships_not_hardcoded_refineries():
     engine = ScenarioEngine(_digital_twin())
     result = engine.run(_request(), scenario_id="SCN-TEST-1", created_at=datetime.now(timezone.utc))
 
-    # CHK_HORMUZ transits RT_BAS_JAM/RT_RAS_MUN, which arrive at PRT_JAM/PRT_MUN,
-    # which feed REF_JAM/REF_MUM respectively - a real digital-twin/graph chain,
-    # not an arbitrary slice of the refinery list.
+    # CHK_HORMUZ transits RT_BAS_JAM (arrives PRT_JAM) and RT_RAS_MUN
+    # (arrives PRT_MUN); both ports feed REF_JAM (data/seeds/refineries.csv)
+    # - a real digital-twin/graph chain, not an arbitrary slice of the
+    # refinery list. REF_MUM feeds only from PRT_MUM (Mumbai), which no
+    # Hormuz-transiting route reaches, so it must NOT appear here - an exact
+    # assertion (not a subset check) so a future regression that silently
+    # drops or widens exposure is actually caught.
     refinery_ids = {refinery.refinery_id for refinery in result.affected_refineries}
-    assert refinery_ids
-    assert refinery_ids.issubset({"REF_JAM", "REF_MUM"})
+    assert refinery_ids == {"REF_JAM"}
+    assert all(refinery.exposure_level for refinery in result.affected_refineries)
 
 
 def test_output_changes_with_severity():
@@ -83,6 +87,22 @@ def test_confidence_decreases_when_manual_overrides_used():
     )
     assert overridden.confidence < baseline.confidence
     assert overridden.supply_at_risk_percent == 50.0
+
+
+def test_partial_entity_resolution_is_disclosed_not_silent():
+    """port_congestion.yaml lists JNPT, SIKKA, PARADIP - JNPT/PARADIP
+    resolve to real ports but SIKKA has no seeded digital-twin entity yet.
+    That gap must stay visible in assumptions even though enough of the
+    template resolved to still count as "uses graph relationships."""
+    engine = ScenarioEngine(_digital_twin())
+    result = engine.run(
+        _request(scenario_type=ScenarioType.PORT_CONGESTION),
+        scenario_id="SCN-PARTIAL",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    assert result.affected_refineries  # JNPT/PARADIP did resolve to real exposure
+    assert any("SIKKA" in assumption.description for assumption in result.assumptions)
 
 
 def test_confidence_decreases_when_entities_unresolved():

@@ -53,6 +53,7 @@ class ScenarioTemplate:
     supply_reduction_percent_range: tuple[float, float]
     freight_cost_increase_percent_range: tuple[float, float]
     resolved_entity_ids: list[str]
+    unresolved_labels: list[str]
     assumptions: list[str]
 
 
@@ -65,6 +66,12 @@ def _load_templates() -> dict[ScenarioType, ScenarioTemplate]:
         resolved_entity_ids = sorted(
             {entity_id for label in labels for entity_id in _ENTITY_LABEL_MAP.get(label, [])}
         )
+        # Tracked per-label rather than folded into a single all-or-nothing
+        # flag: a template like port_congestion.yaml (JNPT, SIKKA, PARADIP)
+        # can have some labels resolve and others not, and that partial gap
+        # should stay visible in the response even when enough of the
+        # template resolved to still count as "uses graph relationships."
+        unresolved_labels = sorted({label for label in labels if label not in _ENTITY_LABEL_MAP})
         templates[scenario_type] = ScenarioTemplate(
             scenario_type=scenario_type,
             commodity_type=raw["commodity_type"],
@@ -72,6 +79,7 @@ def _load_templates() -> dict[ScenarioType, ScenarioTemplate]:
             supply_reduction_percent_range=tuple(raw["supply_reduction_percent_range"]),
             freight_cost_increase_percent_range=tuple(raw["freight_cost_increase_percent_range"]),
             resolved_entity_ids=resolved_entity_ids,
+            unresolved_labels=unresolved_labels,
             assumptions=list(raw.get("assumptions", [])),
         )
     return templates
@@ -147,6 +155,19 @@ class ScenarioEngine:
                         "Affected entities could not be matched to specific digital-twin nodes; "
                         "refinery exposure is estimated from overall capacity share rather than the "
                         "supply chain graph."
+                    ),
+                    is_simulated=True,
+                )
+            )
+        elif template.unresolved_labels:
+            # Some, but not all, of the template's labels resolved - still
+            # counts as "uses graph relationships" overall, but the gap
+            # itself must not disappear silently.
+            assumptions.append(
+                Assumption(
+                    description=(
+                        f"Template references entities with no digital-twin mapping yet: "
+                        f"{', '.join(template.unresolved_labels)}; these contribute no graph-derived exposure."
                     ),
                     is_simulated=True,
                 )

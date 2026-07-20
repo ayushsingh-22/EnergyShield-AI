@@ -36,6 +36,9 @@ export default function Login() {
           Enter command center
         </button>
       </form>
+      <p className="field-hint" style={{ marginTop: '16px' }}>
+        Demo session only - no password required.
+      </p>
     </div>
   )
 }

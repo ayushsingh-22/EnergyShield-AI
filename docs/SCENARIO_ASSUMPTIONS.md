@@ -19,7 +19,16 @@ the full parameter set for each template lives in
 
 Phase 14 adds `LNG_SUPPLY_SHOCK`, `COAL_IMPORT_DISRUPTION`,
 `FERTILIZER_FEEDSTOCK_SHOCK`, and `CRITICAL_MINERAL_EXPORT_RESTRICTION`
-following the same template structure.
+following the same template structure. **Caveat**: unlike the 5 MVP crude
+scenarios, none of these four templates' `affected_entities` labels
+(`QATAR_EXPORT_TERMINAL`, `AUSTRALIA_EXPORT_PORT`, `INDONESIA_EXPORT_PORT`,
+`NATURAL_GAS_FEEDSTOCK`, `CHINA_EXPORT_CONTROL`) have an entry in
+`scenario_engine._ENTITY_LABEL_MAP` yet, because the digital twin only
+seeds crude-oil entities today (Phase 2). They always fall back to the
+top-2-capacity-refinery heuristic described below rather than a real
+graph/digital-twin chain - the response's `assumptions` always says so
+explicitly, but "uses the knowledge graph" should not be assumed for these
+four scenario types until LNG/coal/fertilizer/mineral entities are seeded.
 
 ## Standing Assumptions Across All Scenarios
 
@@ -40,13 +49,27 @@ following the same template structure.
 
 ## Confidence Discounting Rules
 
-`ScenarioResult.confidence` should be reduced when:
+`ScenarioResult.confidence` (`scenarios/impact_model.py::compute_confidence`)
+starts at `0.86` and is reduced when:
 
 - The scenario relies on `manual_overrides` instead of graph/exposure-derived
-  defaults.
-- Any `affected_refineries` entry has `exposure_level` derived from a route
-  with fewer than one corroborating risk event.
-- The India import baseline used is older than one quarter.
+  defaults (`-0.12`).
+- None of the template's/request's affected entities resolved to a specific
+  digital-twin node, so refinery exposure fell back to the top-2-capacity
+  heuristic instead of a real graph chain (`-0.15`). A template where *some*
+  but not all labels resolve (e.g. `port_congestion.yaml`'s `SIKKA`, which
+  has no seeded digital-twin port yet) does not trigger this penalty, but
+  does add a distinct assumption naming the unresolved label(s) so the gap
+  stays visible rather than silently disappearing.
+- The requested `duration_days` deviates from the template's
+  `default_duration_days` by more than 50% (`-0.05`) - a sign the request is
+  extrapolating well outside the template author's assumptions.
+- The India import baseline used is older than one quarter (`-0.06`),
+  detected via `ingestion.source_registry.get_freshness_state("import_baseline")`.
+
+Confidence is clamped to `[0.4, 0.95]` - even a fully-resolved, override-free,
+fresh-baseline run stays below certainty, and a run with every discount
+applied still returns a usable (if low) confidence rather than 0.
 
 ## Template File Structure
 

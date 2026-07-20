@@ -2,6 +2,7 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet'
+import { humanizeLabel } from '../../utils/format'
 
 const ENTITY_COLORS = {
   ExportPort: '#8b5e34',
@@ -27,7 +28,7 @@ function pointToLayer(feature, latlng) {
 
 function onEachFeature(feature, layer) {
   const props = feature.properties ?? {}
-  layer.bindPopup(`<strong>${props.name ?? props.entity_id}</strong><br/>${props.entity_type ?? ''}`)
+  layer.bindPopup(`<strong>${props.name ?? props.entity_id}</strong><br/>${humanizeLabel(props.entity_type)}`)
 }
 
 export default function SupplyRouteMap({ mapData }) {
@@ -48,7 +49,7 @@ export default function SupplyRouteMap({ mapData }) {
         {Object.entries(ENTITY_COLORS).map(([label, color]) => (
           <li key={label}>
             <span className="map-legend__swatch" style={{ background: color }} />
-            {label}
+            {humanizeLabel(label)}
           </li>
         ))}
       </ul>

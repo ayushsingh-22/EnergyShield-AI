@@ -1304,8 +1304,10 @@ List every completed module:
 ✓ backend/risk/risk_scoring_engine.py
 ✓ backend/graph/risk_graph_updater.py
 ✓ backend/services/risk_service.py (replaced the earlier static-mock version with real computation)
+✓ backend/agents/geopolitical_risk_agent.py (`GeopoliticalRiskAgent` - thin agent-layer entry point over `RiskService`; added 2026-07-20, see note below)
 ✓ backend/api/routes/risk.py (wired the live Phase 4 event feed in; endpoints themselves were already frozen and unchanged)
 ✓ backend/api/routes/events.py (added `get_event_service()` so Phase 5 can read the live event set without re-running ingestion)
+✓ backend/tests/agents/test_geopolitical_risk_agent.py
 ✓ backend/tests/risk/test_exposure_model.py
 ✓ backend/tests/risk/test_reliability_model.py
 ✓ backend/tests/risk/test_anomaly_model.py
@@ -1366,6 +1368,17 @@ Lessons Learned
   against a mocked `KGClient` (`backend/tests/graph/test_risk_graph_updater.py`)
   and via observing graceful "unknown entity, node update skipped" warnings
   during a real app boot, not against a live graph.
+- 2026-07-20 correction: `backend/agents/geopolitical_risk_agent.py` was
+  listed in the top-level project structure (this doc's tree, near
+  `procurement_agent.py`/`spr_agent.py`) but had been left as a
+  docstring-plus-TODO stub while this phase's actual scoring logic lived
+  entirely in `risk_scoring_engine.py`/`risk_service.py` - functionally
+  complete, but the named file didn't exist. It's now implemented as
+  `GeopoliticalRiskAgent`, a thin wrapper exposing a consolidated
+  corridor+supplier+refinery risk briefing and a cross-entity-type
+  top-concerns ranking over the existing `RiskService`, so the file the
+  plan names actually does something without duplicating the real scoring
+  logic.
 
 Future Integration
 
@@ -1823,6 +1836,8 @@ List every completed module:
 ✓ backend/api/routes/audit.py (new - `GET /api/v1/audit/{entity_id}`)
 ✓ backend/reports/report_builder.py (new - renders the Markdown executive brief)
 ✓ backend/services/report_service.py (delegates to `report_builder`, records a `REPORT_GENERATED` audit event, persists via `repository.save_generated_report`)
+✓ backend/agents/report_agent.py (`ReportAgent`/`ScenarioNotFoundError` - owns the scenario-id -> scenario -> recommendation -> report assembly `api/routes/reports.py` previously did inline; added 2026-07-20, see note below)
+✓ backend/tests/agents/test_report_agent.py (new)
 ✓ backend/services/scenario_service.py, recommendation_service.py (wired to accept and use `AuditService`)
 ✓ backend/models/core_schema.py (added `AuditEvent`, matching the Phase 11 "Audit Event Schema" exactly - `audit_id`, `entity_id`, `entity_type`, `action`, `actor`, `timestamp`, `source_event_ids`, `model_version`, `summary`, `details`)
 ✓ backend/main.py (registers the `audit` router; startup switched from deprecated `@app.on_event` to a `lifespan` context manager)
@@ -1845,6 +1860,14 @@ Lessons Learned
 - why `AuditEvent` uses `timestamp` while `ScenarioResult`/`Recommendation` use `created_at`: this matches the Phase 11 plan's own "Audit Event Schema" JSON example field-for-field, since audit events are a new schema with no prior consumers to stay backward-compatible with - unlike modifying an existing frozen schema, this was a pure addition.
 - why `main.py` startup was changed from `@app.on_event("startup")` (used when Phase 10 first wired the scheduler in) to a `lifespan` context manager during this phase: FastAPI logs a `DeprecationWarning` for `on_event` on every test run that imports `main.app`; `lifespan` is the same functionality with no warning, and also gave a natural place to call `scheduler.stop()` on shutdown.
 - Testing caveat: as with every other phase touching Neo4j/Postgres, this sandbox has neither running; the Alembic migration and `repository.py`'s SQL was written against the SQLAlchemy Core API and validated by making `session_scope()` degrade correctly when unreachable, not against a live database. Run `docker-compose up postgres` and `alembic upgrade head` from `backend/` to apply it for real.
+- 2026-07-20 correction: `backend/agents/report_agent.py` was listed in
+  the top-level project structure but had been left as a
+  docstring-plus-TODO stub - `api/routes/reports.py` did the
+  scenario-lookup/recommendation-lookup/report-generation assembly
+  inline instead of through a dedicated agent. It's now `ReportAgent`,
+  which owns that assembly end to end (`draft_report(scenario_id)` and
+  `get_context(scenario_id)`), and the route was updated to call it
+  instead of duplicating the lookup chain.
 
 Future Integration
 
@@ -1884,6 +1907,8 @@ Phase 11's `explainer_service.py` and evaluation modules read the same `AuditEve
 | `frontend/src/components/risk/RiskScoreCard.jsx`                  | Ayush | Risk score cards                         |
 | `frontend/src/components/scenarios/ScenarioResultPanel.jsx`       | Ayush | Scenario outputs                         |
 | `frontend/src/components/recommendations/RecommendationTable.jsx` | Ayush | Ranked recommendations                   |
+| `frontend/src/components/graph/GraphView.jsx`                    | Ayush | Node-link graph visualization (added 2026-07-20 - see addendum) |
+| `frontend/src/components/layout/Skeleton.jsx`                     | Ayush | Shared loading-state placeholders (added 2026-07-20 - see addendum) |
 | `frontend/src/api/energyShieldApi.js`                             | Ayush | API client                               |
 | `frontend/src/api/mockData.js`                                    | Ayush | Mock responses matching backend schemas  |
 
@@ -1994,6 +2019,64 @@ Lessons Learned
 Future Integration
 
 Phase 12's demo flow can be driven directly through this UI end to end (Dashboard -> Energy Map -> Scenario Simulator -> Recommendation Center -> Reports) instead of only through direct API calls. Phase 14's `CommodityCommandCenter.jsx` already calls the adapter-backed `/commodities/*` endpoints this phase's Phase 14 work produced, so switching commodities needs no frontend routing changes, matching that phase's own validation checklist item.
+
+### 2026-07-20 addendum: design system rework
+
+A later audit of this phase (prompted by a request to bring the UI fully
+in line with this section and add anything missing) found the original
+"polished analyst-facing dashboard" claim above was overstated: the
+underlying functionality was genuinely correct end to end, but visually
+it was a consistent, plainly-styled scaffold - one 606-line
+non-tokenized `App.css`, no loading skeletons, no KPI/headline summary
+on the Dashboard, and two pages with no dedicated visual component at
+all (`components/graph/.gitkeep`, `components/learning/.gitkeep` were
+never filled in, so Knowledge Graph Explorer printed graph edges as
+plain `source -[type]-> target` text and Learning Center had no charts
+despite `recharts` already being a dependency). This addendum is the
+fix, done directly in the repo (no Stitch MCP was available in this
+environment, and the `DesignSync`/claude.ai design-system tool returned
+`403 permission_denied` for this account - both would have been the
+preferred path per this doc's own tooling conventions had either been
+available).
+
+✓ frontend/src/App.css (rewritten as a token-based system - `--surface-*`/`--ink-*`/`--series-1..8`/`--status-*`/spacing/radii custom properties instead of repeated hardcoded hex; every previous class kept and re-pointed at tokens, plus new `.kpi-row`/`.kpi-tile`, `.skeleton*`, `.graph-view__*` rules)
+✓ frontend/src/index.css (replaced the leftover Vite-template purple/dark-mode theme - unrelated to this app's warm/cream palette and never actually matching it - with a minimal reset)
+✓ frontend/src/components/graph/GraphView.jsx (new - real SVG node-link diagram: categorical color per entity label, arrowed/labeled edges, radial layout, legend; replaces the plain-text edge list on `KnowledgeGraphExplorer.jsx`, which still keeps a table view alongside it)
+✓ frontend/src/components/layout/Skeleton.jsx (new - `SkeletonLine`/`SkeletonCard`/`SkeletonList` shimmer placeholders, used by every page's initial loading state instead of literal "Loading..." text)
+✓ frontend/src/pages/LearningCenter.jsx (added two Recharts bar charts - backtest precision/recall/false-alarm/missed-event as a horizontal bar chart, and predicted-confidence-vs-observed-outcome as a grouped bar chart per historical case - where previously only bullet lists and a table existed)
+✓ frontend/src/pages/Dashboard.jsx (added a `.kpi-row` of 4 headline tiles - highest risk level, active event count, data source count, top corridor score - above the existing three-panel grid)
+✓ frontend/src/components/layout/AppLayout.jsx (added a per-item nav icon and a sidebar footer showing the signed-in analyst name plus a working sign-out button, previously absent)
+✓ frontend/src/components/risk/RiskScoreCard.jsx (added a `selected` prop driving a highlighted state, and colored the delta line green/red instead of always neutral)
+✓ frontend/src/pages/RiskMonitor.jsx, ScenarioSimulator.jsx, RecommendationCenter.jsx, CommodityCommandCenter.jsx, Reports.jsx, EnergyMap.jsx, Login.jsx (consistent page-header subtitle copy, skeleton loading states, keyboard-selectable risk cards, two-column form rows)
+✓ frontend/package.json (added `playwright` as a devDependency - used to launch the app in a real headless browser and screenshot-verify all 9 routes plus the backtest/scenario/graph-search interactions, per this doc's own "browser verification over claiming success" standard applied elsewhere)
+
+Categorical color choice: the dataviz-skill's default palette targets a
+cool/blue surface, not this app's cream (`#fcfaf6`) surface, so a
+warm-compatible 8-hue set was picked and run through the same
+`validate_palette.js` six-check gate (`node scripts/validate_palette.js
+"#2a6fb0,#2f7d4f,#a8548c,#b8860b,#0e9488,#d05c30,#5b4a9e,#c0392b"
+--mode light --surface "#fcfaf6"` -> all checks pass) rather than
+eyeballing swatches against the brand accent.
+
+Verification: a live Vite dev server was driven with Playwright +
+headless Chromium (not just static code review) - logged in, navigated
+all 9 routes, submitted the Knowledge Graph search, ran a backtest, and
+ran a scenario; zero browser console errors across all of it, and every
+interaction screenshotted. One apparent bug surfaced and was root-caused
+during this pass: Learning Center's two bar charts appeared blank in a
+`fullPage: true` Playwright screenshot at a short viewport height, but
+rendering the same chart in isolation (`.recharts-wrapper` element
+screenshot) and in a taller viewport proved this was a Playwright
+full-page-capture/scroll-stitch artifact with animated SVG content, not
+a real rendering defect - the computed `fill` resolved correctly
+(`rgb(42, 111, 176)` = `--series-1`) and the bars paint normally in the
+live app.
+
+Still not done: no dark mode (this is a light-only product per
+`color-scheme: light` in `App.css`'s tokens, an explicit scope decision
+rather than an oversight); no automated visual-regression test suite
+wired into CI (Playwright is present as a devDependency but this pass
+was a manual verification run, not a checked-in test file).
 
 ---
 
@@ -3027,6 +3110,88 @@ After MVP, prioritize these features:
 
 ---
 
+# 2026-07-21 addendum: no-database real-data pass (Phases 2-14)
+
+A review pass focused on "make the running app show real, per-input data
+with no hardcoded values, and run cleanly without external databases."
+Every change below is verified against a live backend + frontend with
+**no Neo4j and no Postgres running** (245 backend tests pass).
+
+## Run cleanly with no databases
+
+- `graph/in_memory_graph.py` (new): builds the same node labels and
+  relationship types `graph/seed_graph.py` writes into Neo4j, but from the
+  in-memory `DigitalTwinService`. `graph/graph_queries.py` now falls back to
+  it whenever Neo4j returns nothing, so the **Knowledge Graph Explorer**,
+  refinery-exposure, alternative-supplier, and impact-traversal features all
+  work with zero external infrastructure (previously they returned `[]`).
+  Impact traversal walks disruption-propagation direction (a chokepoint →
+  the routes transiting it → their export ports → suppliers).
+- `graph/kg_client.py`: `health()` now logs one concise line on the first
+  failure of a backoff window instead of the driver's multi-line connect
+  dump on every probe; added `is_available()`.
+- `graph/relationship_builder.py` + `graph/risk_graph_updater.py`: when
+  Neo4j isn't running they skip the whole batch quietly via
+  `client.is_available()`, eliminating the per-entity "unknown affected
+  entity" / "unknown graph entity" warnings that previously flooded every
+  pipeline run. (Risk scoring reads affected entities from the event object
+  and serves scores from in-memory state, so nothing downstream breaks.)
+- `db/init_db.py` + `db/session.py`: a missing Postgres is now a one-line
+  info message (no SQLAlchemy traceback), and a process-wide backoff means
+  subsequent writes/reads short-circuit instantly instead of each paying the
+  3s connect timeout - keeping the live API fast and quiet with no database.
+- Net effect: backend startup with no databases went from ~60 lines of
+  errors/tracebacks/warnings to the 4 normal uvicorn lines.
+
+## Real data, no hardcoded values
+
+- Frontend now defaults to the **live backend** (`VITE_USE_MOCK_DATA=false`
+  in `.env.example`/`.env.local`); the static `mockData.js` fixtures are
+  opt-in for backend-less frontend dev only. This alone fixed the
+  **Scenario Simulator** (mock mode returned one static Hormuz/crude result
+  regardless of input; the live scenario engine returns genuinely different
+  supply-at-risk/delay/cost per scenario type, severity, and duration - and
+  the **Risk Monitor** card click, which now switches between 14 real
+  corridor/supplier scores instead of a single mock card).
+- `api/routes/learning.py`: `/models` was always `[]` (registry never
+  populated). It now seeds the actually-running `risk-scoring` v0.1 version
+  whose precision/recall/etc. are **computed from a real backtest** of the
+  seeded historical cases, with the training-data range auto-derived - no
+  literal metrics.
+- `api/routes/commodities.py`: `_roadmap_risk` returned a fabricated
+  `risk_score=42.0` for every non-crude commodity. It now derives a
+  distinct, input-driven structural score from each adapter's real
+  `get_risk_features` supplier-concentration index (LNG 65 SEVERE, coal 50
+  HIGH, etc.), flagged `is_simulated` since those commodities have no live
+  ingestion yet - honest instead of fake.
+
+## Human-readable entity names in the UI
+
+- `api/routes/digital_twin.py`: new `GET /digital-twin/names` returns a flat
+  `{entity_id: display_name}` map across every entity type (suppliers
+  included, which `/map` omits).
+- `frontend/src/context/EntityNamesContext.jsx` (new): fetches that map once
+  and exposes `useEntityName()`. Applied across RiskScoreCard,
+  ExplainabilityPanel, ScenarioResultPanel, RiskMonitor, GraphView, and
+  KnowledgeGraphExplorer so `CHK_HORMUZ` → "Strait of Hormuz", `SUP_IRQ` →
+  "Iraq", `REF_JAM` → "Reliance Jamnagar" everywhere, with the raw id kept
+  as a subtle monospace reference. (Complements the 2026-07-20 `humanize()`
+  pass that fixed `MARITIME_ATTACK`-style enum labels.)
+
+## Known remaining scope (not regressions)
+
+- LNG/coal/fertilizer/critical-minerals adapters still expose
+  `is_simulated` scaffolded entity lists - real ingestion for those
+  commodities is genuine future work (the plan marks them "roadmap"); their
+  risk is now an honest structural estimate rather than a fabricated
+  constant.
+- Neo4j/Postgres remain optional enhancements: running them (plus
+  `graph/seed_graph.py` and `alembic upgrade head`) upgrades the same
+  features from the in-memory fallback to durable/graph-backed storage with
+  no code change.
+
+---
+
 _Implementation Plan v1.0 - EnergyShield AI_
 
-_Last Updated: July 06, 2026_
+_Last Updated: July 21, 2026_

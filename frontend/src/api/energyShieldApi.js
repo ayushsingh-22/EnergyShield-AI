@@ -1,4 +1,5 @@
 import * as mock from './mockData'
+import { humanize } from '../utils/format'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1'
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true'
@@ -32,6 +33,11 @@ export async function getDigitalTwinMap() {
 export async function getDigitalTwinExposure() {
   if (USE_MOCK_DATA) return mock.mockDigitalTwinExposure
   return request('/digital-twin/exposure')
+}
+
+export async function getEntityNames() {
+  if (USE_MOCK_DATA) return mock.mockEntityNames
+  return request('/digital-twin/names')
 }
 
 export async function getRefineriesExposed(chokepointId) {
@@ -97,9 +103,9 @@ export async function generateReport(scenarioId) {
       report_id: 'RPT-SCN-20260710-0001',
       scenario_id: mock.mockScenarioResult.scenario_id,
       recommendation_id: mock.mockRecommendation.recommendation_id,
-      title: 'EnergyShield Executive Brief - HORMUZ_PARTIAL_CLOSURE',
+      title: `EnergyShield Executive Brief - ${humanize('HORMUZ_PARTIAL_CLOSURE')}`,
       executive_summary:
-        'CRUDE_OIL disruption scenario HORMUZ_PARTIAL_CLOSURE places 31% of supply at risk with an estimated 9-day delay.',
+        `${humanize('CRUDE_OIL')} disruption scenario ${humanize('HORMUZ_PARTIAL_CLOSURE')} places 31% of supply at risk with an estimated 9-day delay.`,
       report_markdown: mock.mockReportMarkdown,
       top_actions: mock.mockRecommendation.ranked_options.map((option) => option.reason),
       spr_action: mock.mockRecommendation.spr_plan,

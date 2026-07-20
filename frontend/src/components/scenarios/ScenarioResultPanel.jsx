@@ -1,5 +1,9 @@
 // Renders scenario simulation outputs including supply at risk, delay, cost impact, affected refineries, and confidence.
+import { useEntityName } from '../../context/EntityNamesContext'
+import { humanize } from '../../utils/format'
+
 export default function ScenarioResultPanel({ result }) {
+  const resolveName = useEntityName()
   if (!result) {
     return (
       <div className="component component-scenario-result-panel component--empty">
@@ -11,7 +15,7 @@ export default function ScenarioResultPanel({ result }) {
   return (
     <div className="component component-scenario-result-panel">
       <div className="scenario-result__header">
-        <h3>{result.scenario_type}</h3>
+        <h3>{humanize(result.scenario_type)}</h3>
         <span className="pill">{result.scenario_id}</span>
       </div>
 
@@ -46,7 +50,7 @@ export default function ScenarioResultPanel({ result }) {
           {result.affected_refineries.map((refinery) => (
             <li key={refinery.refinery_id}>
               <strong>
-                {refinery.refinery_id} - {refinery.exposure_level}
+                {resolveName(refinery.refinery_id)} - {humanize(refinery.exposure_level)}
               </strong>
               <span>{refinery.reason}</span>
             </li>

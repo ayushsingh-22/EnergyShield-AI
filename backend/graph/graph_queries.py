@@ -1,7 +1,17 @@
-"""Reusable graph query functions used by risk and recommendation agents (Phase 3, section 3.4)."""
+"""Reusable graph query functions used by risk and recommendation agents (Phase 3, section 3.4).
+
+Every function reads from Neo4j when it's reachable and transparently falls
+back to the in-memory graph built from the Phase 2 digital twin
+(`graph/in_memory_graph.py`) when it isn't - so the Knowledge Graph
+Explorer, refinery-exposure, alternative-supplier, and impact-traversal
+features all work with zero external infrastructure. The fallback returns
+the identical record shape, so callers never branch on which backend
+served the result.
+"""
 
 from __future__ import annotations
 
+from graph.in_memory_graph import get_in_memory_graph
 from graph.kg_client import get_kg_client
 
 
@@ -9,7 +19,7 @@ def get_refineries_exposed_to_chokepoint(chokepoint_id: str) -> list[dict]:
     """Refineries reachable from a chokepoint via a transiting route that
     arrives at an import port feeding the refinery."""
     client = get_kg_client()
-    return client.run_query(
+    rows = client.run_query(
         """
         MATCH (c:Chokepoint {entity_id: $chokepoint_id})<-[:TRANSITS]-(route:ShippingRoute)
               -[:ARRIVES_AT]->(port:ImportPort)-[:FEEDS]->(refinery:Refinery)
@@ -18,6 +28,9 @@ def get_refineries_exposed_to_chokepoint(chokepoint_id: str) -> list[dict]:
         """,
         {"chokepoint_id": chokepoint_id},
     )
+    if rows:
+        return rows
+    return get_in_memory_graph().refineries_exposed_to_chokepoint(chokepoint_id)
 
 
 def get_alternative_suppliers(commodity: str, blocked_supplier_id: str) -> list[dict]:
@@ -25,7 +38,7 @@ def get_alternative_suppliers(commodity: str, blocked_supplier_id: str) -> list[
     blocked supplier and any supplier currently AFFECTS-linked to an active
     (non-expired) risk event."""
     client = get_kg_client()
-    return client.run_query(
+    rows = client.run_query(
         """
         MATCH (alt:SupplierCountry)-[:SUPPLIES]->(:Commodity {entity_id: $commodity})
         WHERE alt.entity_id <> $blocked_supplier_id
@@ -39,12 +52,33 @@ def get_alternative_suppliers(commodity: str, blocked_supplier_id: str) -> list[
         """,
         {"commodity": commodity, "blocked_supplier_id": blocked_supplier_id},
     )
+    if rows:
+        return rows
+    # No-Neo4j fallback: every seeded supplier except the blocked one,
+    # ranked by import share. Active-event exclusion is the graph's job;
+    # the procurement agent (Phase 7) already re-applies that filter from
+    # the live event set via `find_candidate_suppliers`, so this endpoint's
+    # fallback just surfaces the structural alternatives.
+    graph = get_in_memory_graph()
+    candidates = [
+        {
+            "entity_id": node_id,
+            "name": data["properties"].get("name"),
+            "region": data["properties"].get("region"),
+            "import_share_percent": data["properties"].get("import_share_percent"),
+            "crude_grade_ids": [],
+        }
+        for node_id, data in graph.nodes.items()
+        if data["label"] == "SupplierCountry" and node_id != blocked_supplier_id
+    ]
+    candidates.sort(key=lambda c: c["import_share_percent"] or 0, reverse=True)
+    return candidates
 
 
 def get_routes_for_supplier(supplier_id: str) -> list[dict]:
     """Shipping routes a supplier country's export ports use to reach India."""
     client = get_kg_client()
-    return client.run_query(
+    rows = client.run_query(
         """
         MATCH (s:SupplierCountry {entity_id: $supplier_id})-[:EXPORTS_FROM]->(:ExportPort)
               -[:USES_ROUTE]->(route:ShippingRoute)
@@ -54,6 +88,9 @@ def get_routes_for_supplier(supplier_id: str) -> list[dict]:
         """,
         {"supplier_id": supplier_id},
     )
+    if rows:
+        return rows
+    return get_in_memory_graph().routes_for_supplier(supplier_id)
 
 
 def get_scenarios_triggered_by_event(event_id: str) -> list[dict]:
@@ -94,6 +131,13 @@ def get_entity_neighborhood(entity_id: str) -> dict:
         {"entity_id": entity_id},
     )
     if not node_rows:
+        # Neo4j is empty/unreachable (or the entity genuinely isn't in the
+        # live graph); fall back to the in-memory digital-twin graph so the
+        # Knowledge Graph Explorer works with no database. Returns the same
+        # shape; a truly unknown id yields the "not found" result below.
+        fallback = get_in_memory_graph().neighborhood(entity_id)
+        if fallback is not None:
+            return fallback
         return {"nodes": [], "edges": [], "query_description": f"Entity '{entity_id}' not found"}
 
     labels = node_rows[0].get("labels") or []
@@ -175,11 +219,8 @@ def get_impact_subgraph(entity_id: str, max_hops: int = 2) -> dict:
     )
 
     if not rows:
-        return {
-            "nodes": [],
-            "edges": [],
-            "query_description": f"No downstream impact found for entity '{entity_id}' within {hops} hop(s)",
-        }
+        # Fall back to the in-memory digital-twin graph (no Neo4j needed).
+        return get_in_memory_graph().impact_subgraph(entity_id, hops)
 
     nodes_by_id: dict[str, dict] = {}
     edges = []

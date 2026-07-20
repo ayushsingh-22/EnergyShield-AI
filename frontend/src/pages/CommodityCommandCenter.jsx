@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getCommodities, getCommodityEntities, getCommodityRisk, getCommodityScenarios } from '../api/energyShieldApi'
 import CommoditySelector from '../components/commodities/CommoditySelector'
+import { SkeletonList } from '../components/layout/Skeleton'
 import RiskScoreCard from '../components/risk/RiskScoreCard'
+import { humanize } from '../utils/format'
 
 export default function CommodityCommandCenter() {
   const [commodities, setCommodities] = useState([])
@@ -10,6 +12,8 @@ export default function CommodityCommandCenter() {
   const [risk, setRisk] = useState([])
   const [scenarioTemplates, setScenarioTemplates] = useState([])
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [entityLoading, setEntityLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -22,6 +26,9 @@ export default function CommodityCommandCenter() {
       .catch((err) => {
         if (!cancelled) setError(err.message)
       })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
     return () => {
       cancelled = true
     }
@@ -30,6 +37,7 @@ export default function CommodityCommandCenter() {
   useEffect(() => {
     if (!selected) return
     let cancelled = false
+    setEntityLoading(true)
     Promise.all([getCommodityEntities(selected), getCommodityRisk(selected), getCommodityScenarios(selected)])
       .then(([entityData, riskData, scenarioData]) => {
         if (cancelled) return
@@ -39,6 +47,9 @@ export default function CommodityCommandCenter() {
       })
       .catch((err) => {
         if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setEntityLoading(false)
       })
     return () => {
       cancelled = true
@@ -50,11 +61,18 @@ export default function CommodityCommandCenter() {
   return (
     <div className="page page-commodity-command-center">
       <div className="page-header">
-        <h1>Commodity Command Center</h1>
+        <div>
+          <h1>Commodity Command Center</h1>
+          <p className="page-header__copy">Switch commodities to see their own entities, risk, and scenario templates.</p>
+        </div>
       </div>
       {error && <p className="error-banner">{error}</p>}
 
-      <CommoditySelector commodities={commodities} selected={selected} onSelect={setSelected} />
+      {loading ? (
+        <SkeletonList rows={1} />
+      ) : (
+        <CommoditySelector commodities={commodities} selected={selected} onSelect={setSelected} />
+      )}
 
       {selectedDefinition && (
         <section className="card-grid">
@@ -62,35 +80,51 @@ export default function CommodityCommandCenter() {
             <h2>{selectedDefinition.display_name}</h2>
             <p className="panel-copy">Unit: {selectedDefinition.unit}</p>
             <h3>Scenario templates</h3>
-            <ul className="data-list compact">
-              {scenarioTemplates.map((template) => (
-                <li key={template}>{template}</li>
-              ))}
-            </ul>
+            {entityLoading ? (
+              <SkeletonList rows={2} />
+            ) : (
+              <ul className="data-list compact">
+                {scenarioTemplates.map((template) => (
+                  <li key={template}>{humanize(template)}</li>
+                ))}
+                {!scenarioTemplates.length && <li>No scenario templates for this commodity yet.</li>}
+              </ul>
+            )}
           </article>
 
           <article className="panel">
             <h2>Supply chain entities</h2>
             <p className="panel-copy">{entities?.entity_count ?? 0} entities loaded.</p>
-            <ul className="data-list compact">
-              {entities?.entities?.map((entity) => (
-                <li key={entity.entity_id}>
-                  <strong>{entity.name}</strong>
-                  <span>{entity.entity_type}</span>
-                  {entity.is_simulated && <span className="tag tag--simulated">simulated</span>}
-                </li>
-              ))}
-            </ul>
+            {entityLoading ? (
+              <SkeletonList rows={2} />
+            ) : (
+              <ul className="data-list compact">
+                {entities?.entities?.map((entity) => (
+                  <li key={entity.entity_id}>
+                    <strong>{entity.name}</strong>
+                    <span>{humanize(entity.entity_type)}</span>
+                    {entity.is_simulated && <span className="tag tag--simulated">simulated</span>}
+                  </li>
+                ))}
+                {!entities?.entities?.length && <li>No entities loaded for this commodity yet.</li>}
+              </ul>
+            )}
           </article>
 
           <article className="panel">
             <h2>Risk cards</h2>
-            <div className="risk-card-grid">
-              {risk.map((score) => (
-                <RiskScoreCard key={score.entity_id} score={score} />
-              ))}
-              {!risk.length && <p className="panel-copy">No risk scores available for this commodity yet.</p>}
-            </div>
+            {entityLoading ? (
+              <div className="risk-card-grid">
+                <SkeletonList rows={2} />
+              </div>
+            ) : (
+              <div className="risk-card-grid">
+                {risk.map((score) => (
+                  <RiskScoreCard key={score.entity_id} score={score} />
+                ))}
+                {!risk.length && <p className="panel-copy">No risk scores available for this commodity yet.</p>}
+              </div>
+            )}
           </article>
         </section>
       )}

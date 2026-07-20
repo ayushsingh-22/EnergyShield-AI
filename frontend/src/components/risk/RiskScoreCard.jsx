@@ -1,4 +1,7 @@
 // Renders a single corridor/supplier risk score card with score, level, delta, top drivers, and evidence.
+import { useEntityName } from '../../context/EntityNamesContext'
+import { humanize } from '../../utils/format'
+
 const LEVEL_CLASS = {
   LOW: 'risk-badge risk-badge--low',
   MEDIUM: 'risk-badge risk-badge--medium',
@@ -13,21 +16,34 @@ function formatDelta(delta) {
   return `${sign}${delta} vs previous`
 }
 
-export default function RiskScoreCard({ score, onSelectEvidence }) {
+export default function RiskScoreCard({ score, onSelectEvidence, selected = false }) {
+  const resolveName = useEntityName()
   if (!score) return null
   const badgeClass = LEVEL_CLASS[score.risk_level] ?? 'risk-badge'
+  const rootClass = selected
+    ? 'component component-risk-score-card component-risk-score-card--selected'
+    : 'component component-risk-score-card'
+  const deltaClass =
+    score.delta > 0
+      ? 'risk-score-card__delta risk-score-card__delta--up'
+      : score.delta < 0
+        ? 'risk-score-card__delta risk-score-card__delta--down'
+        : 'risk-score-card__delta'
 
   return (
-    <div className="component component-risk-score-card">
+    <div className={rootClass}>
       <div className="risk-score-card__header">
-        <strong>{score.entity_id}</strong>
-        <span className={badgeClass}>{score.risk_level}</span>
+        <span className="risk-score-card__title">
+          <strong>{resolveName(score.entity_id)}</strong>
+          <span className="risk-score-card__id">{score.entity_id}</span>
+        </span>
+        <span className={badgeClass}>{humanize(score.risk_level)}</span>
       </div>
       <div className="risk-score-card__score">
         {score.risk_score}
         <span className="risk-score-card__score-max">/100</span>
       </div>
-      <p className="risk-score-card__delta">{formatDelta(score.delta)}</p>
+      <p className={deltaClass}>{formatDelta(score.delta)}</p>
       {score.top_drivers?.length ? (
         <ul className="risk-score-card__drivers">
           {score.top_drivers.map((driver, index) => (

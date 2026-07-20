@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { runScenario } from '../api/energyShieldApi'
 import ScenarioResultPanel from '../components/scenarios/ScenarioResultPanel'
+import { humanize } from '../utils/format'
 
 const SCENARIO_TYPES = [
   'HORMUZ_PARTIAL_CLOSURE',
@@ -76,7 +77,10 @@ export default function ScenarioSimulator() {
   return (
     <div className="page page-scenario-simulator">
       <div className="page-header">
-        <h1>Scenario Simulator</h1>
+        <div>
+          <h1>Scenario Simulator</h1>
+          <p className="page-header__copy">Model a disruption and see supply, delay, cost, and refinery impact.</p>
+        </div>
       </div>
 
       <section className="card-grid">
@@ -91,28 +95,33 @@ export default function ScenarioSimulator() {
           >
             {SCENARIO_TYPES.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {humanize(type)}
               </option>
             ))}
           </select>
 
-          <label htmlFor="severity">Severity</label>
-          <select id="severity" value={form.severity} onChange={(event) => update('severity', event.target.value)}>
-            {SEVERITY_LEVELS.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-
-          <label htmlFor="duration_days">Duration (days)</label>
-          <input
-            id="duration_days"
-            type="number"
-            min={1}
-            value={form.duration_days}
-            onChange={(event) => update('duration_days', event.target.value)}
-          />
+          <div className="form-row">
+            <div>
+              <label htmlFor="severity">Severity</label>
+              <select id="severity" value={form.severity} onChange={(event) => update('severity', event.target.value)}>
+                {SEVERITY_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {humanize(level)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="duration_days">Duration (days)</label>
+              <input
+                id="duration_days"
+                type="number"
+                min={1}
+                value={form.duration_days}
+                onChange={(event) => update('duration_days', event.target.value)}
+              />
+            </div>
+          </div>
 
           <label htmlFor="affected_entities">Affected entity ids (comma-separated, optional)</label>
           <input
@@ -122,26 +131,33 @@ export default function ScenarioSimulator() {
             value={form.affected_entities}
             onChange={(event) => update('affected_entities', event.target.value)}
           />
+          <p className="field-hint">Leave blank to let the scenario template resolve its own affected entities.</p>
 
           <details>
             <summary>Manual overrides (optional)</summary>
-            <label htmlFor="supply_reduction_percent">Supply reduction %</label>
-            <input
-              id="supply_reduction_percent"
-              type="number"
-              value={form.supply_reduction_percent}
-              onChange={(event) => update('supply_reduction_percent', event.target.value)}
-            />
-            <label htmlFor="freight_cost_increase_percent">Freight cost increase %</label>
-            <input
-              id="freight_cost_increase_percent"
-              type="number"
-              value={form.freight_cost_increase_percent}
-              onChange={(event) => update('freight_cost_increase_percent', event.target.value)}
-            />
+            <div className="form-row">
+              <div>
+                <label htmlFor="supply_reduction_percent">Supply reduction %</label>
+                <input
+                  id="supply_reduction_percent"
+                  type="number"
+                  value={form.supply_reduction_percent}
+                  onChange={(event) => update('supply_reduction_percent', event.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="freight_cost_increase_percent">Freight cost increase %</label>
+                <input
+                  id="freight_cost_increase_percent"
+                  type="number"
+                  value={form.freight_cost_increase_percent}
+                  onChange={(event) => update('freight_cost_increase_percent', event.target.value)}
+                />
+              </div>
+            </div>
           </details>
 
-          <button type="submit" className="primary-button" disabled={loading}>
+          <button type="submit" className="primary-button" disabled={loading} style={{ marginTop: 'var(--space-3)' }}>
             {loading ? 'Running...' : 'Run scenario'}
           </button>
           {error && <p className="error-banner">{error}</p>}

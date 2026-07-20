@@ -71,7 +71,7 @@ class _JsonTable:
                 ).fetchall()
                 return [dict(row._mapping) for row in rows]
             except Exception:  # noqa: BLE001 - table may not exist yet if init_db() hasn't run
-                logger.warning("Query against '%s' failed; returning no rows.", self.table.name, exc_info=True)
+                logger.info("Query against '%s' skipped (table missing or DB unavailable); returning no rows.", self.table.name)
                 return []
 
 

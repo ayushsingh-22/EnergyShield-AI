@@ -44,6 +44,15 @@ def upsert_event_relationships(event: RiskEvent, client: KGClient | None = None)
     """
     client = client or get_kg_client()
 
+    # When Neo4j isn't running, skip the whole event quietly: with no graph
+    # there are no entity nodes for an AFFECTS edge to attach to, so every
+    # target would otherwise log an "unknown affected entity" warning on
+    # every pipeline run. Risk scoring reads affected entities from the
+    # event object directly (not the graph), so nothing downstream breaks.
+    # The single reachability warning from `KGClient` already covers it.
+    if not client.is_available():
+        return 0
+
     client.run_query(
         "MERGE (evt:RiskEvent {entity_id: $entity_id}) SET evt += $properties",
         {"entity_id": event.event_id, "properties": _event_properties(event)},

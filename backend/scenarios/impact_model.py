@@ -44,6 +44,9 @@ def compute_supply_at_risk_percent(
     return round(_severity_scaled(supply_reduction_percent_range, severity), 1)
 
 
+_MAX_FREIGHT_COST_IMPACT_PERCENT = 300.0
+
+
 def compute_freight_cost_impact_percent(
     freight_cost_increase_percent_range: tuple[float, float],
     severity: RiskLevel,
@@ -53,7 +56,7 @@ def compute_freight_cost_impact_percent(
     override = manual_overrides.get("freight_cost_increase_percent")
     if override is not None:
         overrides_used.append("freight_cost_increase_percent")
-        return round(max(0.0, override), 1)
+        return round(max(0.0, min(_MAX_FREIGHT_COST_IMPACT_PERCENT, override)), 1)
     return round(_severity_scaled(freight_cost_increase_percent_range, severity), 1)
 
 

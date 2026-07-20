@@ -1,6 +1,7 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import AppLayout from './components/layout/AppLayout'
 import RequireAuth from './components/layout/RequireAuth'
+import { EntityNamesProvider } from './context/EntityNamesContext'
 import CommodityCommandCenter from './pages/CommodityCommandCenter'
 import Dashboard from './pages/Dashboard'
 import EnergyMap from './pages/EnergyMap'
@@ -21,7 +22,9 @@ function App() {
         <Route
           element={
             <RequireAuth>
-              <AppLayout />
+              <EntityNamesProvider>
+                <AppLayout />
+              </EntityNamesProvider>
             </RequireAuth>
           }
         >

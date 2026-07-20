@@ -1,5 +1,9 @@
 // Renders the explanation UI showing top drivers and evidence behind a risk score, scenario result, or recommendation.
+import { useEntityName } from '../../context/EntityNamesContext'
+import { humanize } from '../../utils/format'
+
 export default function ExplainabilityPanel({ score }) {
+  const resolveName = useEntityName()
   if (!score) {
     return (
       <div className="component component-explainability-panel component--empty">
@@ -11,7 +15,7 @@ export default function ExplainabilityPanel({ score }) {
   return (
     <div className="component component-explainability-panel">
       <h4>
-        Why is {score.entity_id} {score.risk_level}?
+        Why is {resolveName(score.entity_id)} {humanize(score.risk_level)}?
       </h4>
       <p className="panel-copy">
         Score {score.risk_score}/100, confidence {Math.round((score.confidence ?? 0) * 100)}%.

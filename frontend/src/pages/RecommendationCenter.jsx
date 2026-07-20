@@ -43,22 +43,28 @@ export default function RecommendationCenter() {
   return (
     <div className="page page-recommendation-center">
       <div className="page-header">
-        <h1>Recommendation Center</h1>
+        <div>
+          <h1>Recommendation Center</h1>
+          <p className="page-header__copy">Ranked procurement alternatives and SPR drawdown plan for a scenario.</p>
+        </div>
       </div>
 
       <form className="panel inline-form" onSubmit={handleLookup}>
-        <label htmlFor="scenario-id">Scenario ID</label>
-        <input
-          id="scenario-id"
-          type="text"
-          placeholder="e.g. SCN-20260719-0001"
-          value={scenarioId}
-          onChange={(event) => setScenarioId(event.target.value)}
-        />
+        <div>
+          <label htmlFor="scenario-id">Scenario ID</label>
+          <input
+            id="scenario-id"
+            type="text"
+            placeholder="e.g. SCN-20260719-0001"
+            value={scenarioId}
+            onChange={(event) => setScenarioId(event.target.value)}
+          />
+        </div>
         <button type="submit" className="primary-button" disabled={loading}>
           {loading ? 'Loading...' : 'Load recommendation'}
         </button>
       </form>
+      <p className="field-hint">Run a scenario in the Scenario Simulator first, then paste its ID here.</p>
       {error && <p className="error-banner">{error}</p>}
 
       <section className="panel">

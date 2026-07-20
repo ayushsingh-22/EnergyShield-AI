@@ -1,4 +1,6 @@
 // Renders ranked supplier-route and SPR recommendations with confidence, assumptions, and action priority.
+import { humanize } from '../../utils/format'
+
 const PRIORITY_CLASS = {
   IMMEDIATE: 'pill pill--immediate',
   CONTINGENCY: 'pill pill--contingency',
@@ -37,10 +39,12 @@ export default function RecommendationTable({ recommendation }) {
               <td>{option.route}</td>
               <td>{option.estimated_delay_days}d</td>
               <td>{option.cost_impact_percent}%</td>
-              <td>{option.risk_level}</td>
+              <td>{humanize(option.risk_level)}</td>
               <td>{Math.round(option.feasibility_score * 100)}%</td>
               <td>
-                <span className={PRIORITY_CLASS[option.action_priority] ?? 'pill'}>{option.action_priority}</span>
+                <span className={PRIORITY_CLASS[option.action_priority] ?? 'pill'}>
+                  {humanize(option.action_priority)}
+                </span>
               </td>
             </tr>
           ))}

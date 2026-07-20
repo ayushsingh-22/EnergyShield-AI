@@ -6,6 +6,7 @@ from datetime import datetime
 
 from models.recommendation_schema import Recommendation
 from models.scenario_schema import ScenarioResult
+from reports.formatting import humanize as _humanize
 
 
 def build_markdown_report(
@@ -14,7 +15,7 @@ def build_markdown_report(
     """Renders a human-readable Markdown crisis-response brief (section 8.3
     output: "Markdown or PDF-ready report payload")."""
     lines = [
-        f"# EnergyShield Executive Brief - {scenario.scenario_type}",
+        f"# EnergyShield Executive Brief - {_humanize(scenario.scenario_type)}",
         "",
         f"**Report ID:** {report_id}  ",
         f"**Generated:** {generated_at.isoformat()}  ",
@@ -23,7 +24,7 @@ def build_markdown_report(
         "",
         "## Executive Summary",
         (
-            f"{scenario.commodity_type} disruption scenario `{scenario.scenario_type}` places "
+            f"{_humanize(scenario.commodity_type)} disruption scenario `{scenario.scenario_type}` places "
             f"**{scenario.supply_at_risk_percent}%** of supply at risk with an estimated "
             f"**{scenario.estimated_delay_days}-day** delay and a **{scenario.freight_cost_impact_percent}%** "
             "freight cost impact."
@@ -34,7 +35,7 @@ def build_markdown_report(
 
     if scenario.affected_refineries:
         for refinery in scenario.affected_refineries:
-            lines.append(f"- **{refinery.refinery_id}** ({refinery.exposure_level}): {refinery.reason}")
+            lines.append(f"- **{refinery.refinery_id}** ({_humanize(refinery.exposure_level)}): {refinery.reason}")
     else:
         lines.append("- No specific refinery exposure resolved.")
 
@@ -42,7 +43,7 @@ def build_markdown_report(
     if recommendation.ranked_options:
         for option in recommendation.ranked_options:
             lines.append(
-                f"{option.rank}. **{option.supplier}** via {option.route} - {option.action_priority} "
+                f"{option.rank}. **{option.supplier}** via {option.route} - {_humanize(option.action_priority)} "
                 f"(feasibility {option.feasibility_score}, delay {option.estimated_delay_days}d, "
                 f"cost impact {option.cost_impact_percent}%)"
             )

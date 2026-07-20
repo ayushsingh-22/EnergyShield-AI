@@ -223,16 +223,16 @@ export const mockRecommendation = {
   created_at: '2026-07-10T09:05:00Z',
 }
 
-export const mockReportMarkdown = `# EnergyShield Executive Brief - HORMUZ_PARTIAL_CLOSURE
+export const mockReportMarkdown = `# EnergyShield Executive Brief - Hormuz Partial Closure
 
 **Report ID:** RPT-SCN-20260710-0001
 **Scenario:** SCN-20260710-0001 | **Recommendation:** REC-SCN-20260710-0001
 
 ## Executive Summary
-CRUDE_OIL disruption scenario HORMUZ_PARTIAL_CLOSURE places **31%** of supply at risk with an estimated **9-day** delay.
+Crude Oil disruption scenario \`HORMUZ_PARTIAL_CLOSURE\` places **31%** of supply at risk with an estimated **9-day** delay.
 
 ## Recommended Actions
-1. **Saudi Arabia** via East-West corridor to west coast India - IMMEDIATE
+1. **Saudi Arabia** via East-West corridor to west coast India - Immediate
 
 ## Strategic Reserve Action
 Drawdown recommended: 18% starting day 3.
@@ -420,10 +420,38 @@ export const mockCommodities = [
   },
   {
     commodity_type: 'LNG',
-    display_name: 'Lng',
+    display_name: 'LNG',
     unit: 'mmbtu',
     demand_sector_ids: ['Power', 'City gas'],
     risk_parameters: { status_weight: 0.5 },
     scenario_template_ids: ['LNG_SUPPLY_SHOCK'],
   },
 ]
+
+// id -> display name across every entity type, mirroring the backend's
+// GET /digital-twin/names. Lets mock mode resolve entity ids to names the
+// same way live mode does.
+export const mockEntityNames = {
+  SUP_IRQ: 'Iraq',
+  SUP_KSA: 'Saudi Arabia',
+  SUP_RUS: 'Russia',
+  SUP_UAE: 'United Arab Emirates',
+  SUP_USA: 'United States',
+  CHK_HORMUZ: 'Strait of Hormuz',
+  CHK_BAB: 'Bab el-Mandeb',
+  CHK_SUEZ: 'Suez Canal',
+  CHK_MALACCA: 'Strait of Malacca',
+  RT_BAS_JAM: 'Basra to Jamnagar',
+  RT_RAS_MUN: 'Ras Tanura to Mundra',
+  RT_NOV_JAM: 'Novorossiysk to Jamnagar',
+  RT_FUJ_MAN: 'Fujairah to Mangalore',
+  RT_HOU_PAR: 'Houston to Paradip',
+  REF_JAM: 'Reliance Jamnagar',
+  REF_PAR: 'Paradip Refinery',
+  REF_MUM: 'Mumbai Refinery',
+  REF_MAN: 'Mangalore Refinery',
+  REF_VIS: 'Visakhapatnam Refinery',
+  SPR_MAN: 'Mangalore SPR',
+  PRT_BASRA: 'Basra Oil Terminal',
+  PRT_RAS: 'Ras Tanura',
+}

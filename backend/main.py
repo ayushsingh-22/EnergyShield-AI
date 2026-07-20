@@ -10,8 +10,14 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Load .env (API keys for live data feeds, DB creds, etc.) before any module
+# reads os.getenv at import time. Searches upward from cwd, so it finds the
+# repo-root .env whether the app is started from backend/ or the repo root.
+load_dotenv()
 
 from api.routes import (
     audit,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from itertools import count
 
@@ -9,6 +10,8 @@ from models.scenario_schema import ScenarioRequest, ScenarioResult
 from scenarios.scenario_engine import ScenarioEngine
 from services.audit_service import AuditService
 from storage import repository
+
+logger = logging.getLogger(__name__)
 
 
 class ScenarioService:
@@ -35,7 +38,26 @@ class ScenarioService:
         return result
 
     def get_scenario(self, scenario_id: str) -> ScenarioResult | None:
-        return self._results.get(scenario_id)
+        """In-memory lookup first (fast path within this process); falls
+        back to the Postgres-backed `repository.get_scenario_run` so a
+        scenario run survives a process restart when a database is
+        actually available. Degrades to the in-memory-only behavior this
+        always had when Postgres is unreachable - the payload write in
+        `run_scenario` was otherwise dead weight nothing ever read back."""
+        cached = self._results.get(scenario_id)
+        if cached is not None:
+            return cached
+
+        rows = repository.get_scenario_run(scenario_id)
+        if not rows:
+            return None
+        try:
+            result = ScenarioResult.model_validate_json(rows[-1]["payload"])
+        except Exception:  # noqa: BLE001 - a corrupt/stale row must not break retrieval
+            logger.exception("Failed to deserialize stored scenario run '%s'", scenario_id)
+            return None
+        self._results[scenario_id] = result
+        return result
 
     def list_supported_scenarios(self) -> list[str]:
         return self._engine.list_supported_scenarios()

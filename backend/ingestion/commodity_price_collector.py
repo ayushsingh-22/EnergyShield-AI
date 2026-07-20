@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, List, Optional
 from datetime import datetime, timezone
 
 from ingestion.base_collector import BaseCollector
+from ingestion.http_client import fetch_json
 from ingestion.source_registry import get_source_reliability
 from models.data_source_schema import RawSourceRecord
 
@@ -17,11 +19,18 @@ logger = logging.getLogger(__name__)
 # reported as an anomaly rather than a routine daily update.
 SPIKE_THRESHOLD_PERCENT = 3.0
 
-# Seeded daily Brent close prices (USD/bbl), oldest first - stands in for a
-# live EIA/FRED pull per the Phase 1 fallback contract. Includes a real
-# multi-day rally so the threshold/spike logic has something to detect in
-# the seeded/demo path rather than always reporting a static message.
+# Seeded daily Brent close prices (USD/bbl), oldest first - the fallback when
+# no live price feed is configured/reachable. Includes a real multi-day rally
+# so the threshold/spike logic has something to detect in the demo path.
 _SEEDED_BRENT_SERIES = [82.10, 82.40, 81.90, 83.20, 84.00, 85.10, 88.90, 89.30]
+
+# Live price feeds (opt-in via ENABLE_LIVE_FEEDS). EIA v2 is primary (Brent
+# daily spot, series RBRTE); Alpha Vantage BRENT is the secondary fallback.
+_LIVE_FEEDS_ENABLED = os.getenv("ENABLE_LIVE_FEEDS", "false").lower() in ("1", "true", "yes")
+_EIA_API_KEY = os.getenv("EIA_API_KEY", "")
+_EIA_BRENT_URL = "https://api.eia.gov/v2/petroleum/pri/spt/data/"
+_ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY", "")
+_ALPHA_VANTAGE_URL = "https://www.alphavantage.co/query"
 
 
 def _format_percent(value: Optional[float]) -> str:
@@ -43,9 +52,58 @@ class CommodityPriceCollector(BaseCollector):
             return None
         return round((latest - previous) / previous * 100, 2)
 
+    def _fetch_eia_series(self) -> Optional[List[float]]:
+        """Daily Brent spot series from EIA v2 (oldest-first), or None."""
+        if not _EIA_API_KEY:
+            return None
+        payload = fetch_json(
+            _EIA_BRENT_URL,
+            params={
+                "api_key": _EIA_API_KEY,
+                "frequency": "daily",
+                "data[0]": "value",
+                "facets[series][]": "RBRTE",  # Europe Brent Spot Price FOB (USD/bbl)
+                "sort[0][column]": "period",
+                "sort[0][direction]": "desc",
+                "length": "8",
+            },
+            source_name=self.source_name,
+        )
+        try:
+            rows = payload["response"]["data"]  # newest-first
+            prices = [float(row["value"]) for row in rows if row.get("value") is not None]
+            return list(reversed(prices)) or None  # oldest-first for change math
+        except (TypeError, KeyError, ValueError):
+            return None
+
+    def _fetch_alpha_vantage_series(self) -> Optional[List[float]]:
+        """Daily Brent series from Alpha Vantage (oldest-first), or None."""
+        if not _ALPHA_VANTAGE_API_KEY:
+            return None
+        payload = fetch_json(
+            _ALPHA_VANTAGE_URL,
+            params={"function": "BRENT", "interval": "daily", "apikey": _ALPHA_VANTAGE_API_KEY},
+            source_name=self.source_name,
+        )
+        try:
+            data = payload["data"]  # newest-first, {date, value}
+            prices = [float(row["value"]) for row in data[:8] if row.get("value") not in (None, ".")]
+            return list(reversed(prices)) or None
+        except (TypeError, KeyError, ValueError):
+            return None
+
+    def _resolve_series(self) -> tuple[List[float], bool]:
+        """Returns (price_series, is_live). Tries EIA, then Alpha Vantage,
+        then the seeded series."""
+        if _LIVE_FEEDS_ENABLED:
+            live = self._fetch_eia_series() or self._fetch_alpha_vantage_series()
+            if live and len(live) >= 2:
+                return live, True
+        return _SEEDED_BRENT_SERIES, False
+
     def fetch(self) -> List[RawSourceRecord]:
         try:
-            prices = _SEEDED_BRENT_SERIES
+            prices, _is_live = self._resolve_series()
             latest_price = prices[-1]
             changes = {
                 "1_day": self._compute_change_percent(prices, 1),

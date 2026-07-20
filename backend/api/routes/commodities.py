@@ -17,7 +17,7 @@ from commodities.crude_oil_adapter import CrudeOilAdapter
 from commodities.fertilizer_adapter import FertilizerAdapter
 from commodities.lng_adapter import LngAdapter
 from models.commodity_schema import CommodityDefinition
-from models.core_schema import CommodityType, EntityType, RiskLevel
+from models.core_schema import Assumption, CommodityType, EntityType, RiskLevel
 from models.risk_schema import RiskScore
 from models.scenario_schema import ScenarioRequest, ScenarioResult
 from services.digital_twin_service import DigitalTwinService
@@ -68,20 +68,61 @@ def _load_definitions() -> dict[CommodityType, CommodityDefinition]:
     return definitions
 
 
+def _risk_level_for(score: float) -> RiskLevel:
+    if score >= 80:
+        return RiskLevel.CRITICAL
+    if score >= 60:
+        return RiskLevel.SEVERE
+    if score >= 40:
+        return RiskLevel.HIGH
+    if score >= 20:
+        return RiskLevel.MEDIUM
+    return RiskLevel.LOW
+
+
 def _roadmap_risk(commodity_type: CommodityType) -> list[RiskScore]:
+    """Roadmap-commodity structural risk, derived from the adapter's own
+    `get_risk_features` (a real per-commodity number) rather than a fixed
+    constant, so LNG/coal/fertilizer/critical-minerals each read
+    differently and honestly reflect their supplier-concentration index.
+
+    These commodities have no live ingestion yet (`commodity_definitions.yaml`
+    marks them "roadmap"), so the score is a structural-concentration
+    estimate, flagged simulated - not a live event-driven score like crude
+    oil's. When their ingestion streams are built, this endpoint routes
+    through the real `RiskService` the same way crude oil already does."""
+    adapter = _ADAPTERS[commodity_type]
+    features = adapter.get_risk_features(signals=[])
+    concentration = float(features.get("supplier_concentration_index", 0.5))
+    # Supplier concentration is the dominant structural vulnerability for a
+    # commodity with no live signal feed: map its 0..1 index onto the same
+    # 0..100 band the risk engine uses.
+    score = round(min(100.0, max(0.0, concentration * 100.0)), 1)
+    entity_count = len(adapter.get_supply_chain_entities())
     return [
         RiskScore(
             entity_id=f"{commodity_type.value}_GLOBAL",
             entity_type=EntityType.DEMAND_SECTOR,
             commodity_type=commodity_type,
-            risk_score=42.0,
-            risk_level=RiskLevel.MEDIUM,
-            previous_score=39.0,
-            delta=3.0,
-            top_drivers=["Commodity adapter is scaffolded but not yet fed by live ingestion streams."],
+            risk_score=score,
+            risk_level=_risk_level_for(score),
+            previous_score=None,
+            delta=None,
+            top_drivers=[
+                f"Structural supplier-concentration index {concentration:.2f} across {entity_count} scaffolded entities.",
+                "Roadmap commodity: score reflects structural concentration only, not live ingestion streams.",
+            ],
             evidence_event_ids=[],
-            confidence=0.58,
-            assumptions=[],
+            confidence=0.5,
+            assumptions=[
+                Assumption(
+                    description=(
+                        f"{commodity_type.value} has no live signal ingestion yet; risk is a structural "
+                        "supplier-concentration estimate, not an event-driven live score."
+                    ),
+                    is_simulated=True,
+                )
+            ],
             audit_id=f"AUD-{commodity_type.value}-ROADMAP",
             updated_at=datetime.now(timezone.utc),
         )

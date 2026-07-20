@@ -82,8 +82,17 @@ def update_risk_score(score: RiskScore, client: KGClient | None = None) -> bool:
 def update_risk_scores(scores: list[RiskScore], client: KGClient | None = None) -> int:
     """Updates every score in `scores`. Never raises - one bad write (or an
     unreachable graph entirely) must not break the risk API. Returns the
-    number of scores successfully written."""
+    number of scores successfully written.
+
+    When Neo4j isn't running at all, skips the whole batch quietly: without
+    a graph there are no nodes to attach risk scores to, and the risk API
+    serves scores from in-memory state regardless. This avoids one
+    "unknown graph entity" warning per scored entity on every pipeline run
+    in a no-database setup - the single reachability warning from
+    `KGClient` already covers it."""
     client = client or get_kg_client()
+    if not client.is_available():
+        return 0
     updated = 0
     for score in scores:
         try:

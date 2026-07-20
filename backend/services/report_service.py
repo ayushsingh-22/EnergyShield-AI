@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from models.recommendation_schema import Recommendation
 from models.scenario_schema import ScenarioResult
+from reports.formatting import humanize
 from reports.report_builder import build_markdown_report
 from services.audit_service import AuditService
 from storage import repository
@@ -39,9 +40,9 @@ class ReportService:
             "generated_at": generated_at,
             "scenario_id": scenario.scenario_id,
             "recommendation_id": recommendation.recommendation_id,
-            "title": f"EnergyShield Executive Brief - {scenario.scenario_type}",
+            "title": f"EnergyShield Executive Brief - {humanize(scenario.scenario_type)}",
             "executive_summary": (
-                f"{scenario.commodity_type} disruption scenario {scenario.scenario_type} places "
+                f"{humanize(scenario.commodity_type)} disruption scenario {humanize(scenario.scenario_type)} places "
                 f"{scenario.supply_at_risk_percent}% of supply at risk with an estimated "
                 f"{scenario.estimated_delay_days}-day delay."
             ),

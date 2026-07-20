@@ -98,14 +98,31 @@ def test_get_entity_neighborhood_merges_outgoing_and_incoming(monkeypatch):
     assert incoming["confidence"] == 0.8
 
 
-def test_get_impact_subgraph_empty(monkeypatch):
+def test_get_impact_subgraph_unknown_entity_stays_empty(monkeypatch):
+    """An id that exists in neither Neo4j nor the in-memory digital twin
+    yields an empty result even after the fallback is consulted."""
+    fake = _FakeKGClient([])
+    monkeypatch.setattr(graph_queries, "get_kg_client", lambda: fake)
+
+    result = graph_queries.get_impact_subgraph("TOTALLY_UNKNOWN", max_hops=3)
+
+    assert result["nodes"] == []
+    assert result["edges"] == []
+
+
+def test_get_impact_subgraph_falls_back_to_in_memory_graph(monkeypatch):
+    """When Neo4j returns nothing for a real entity, the query transparently
+    falls back to the in-memory digital-twin graph so the feature works with
+    no database (a chokepoint's upstream routes/ports/suppliers)."""
     fake = _FakeKGClient([])
     monkeypatch.setattr(graph_queries, "get_kg_client", lambda: fake)
 
     result = graph_queries.get_impact_subgraph("CHK_HORMUZ", max_hops=3)
 
-    assert result["nodes"] == []
-    assert result["edges"] == []
+    ids = {n["entity_id"] for n in result["nodes"]}
+    assert "CHK_HORMUZ" in ids
+    assert result["edges"]  # routes transiting Hormuz, etc.
+    assert any(e["relationship_type"] == "TRANSITS" for e in result["edges"])
 
 
 def test_get_impact_subgraph_clamps_hops_and_builds_nodes(monkeypatch):

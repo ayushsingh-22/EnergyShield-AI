@@ -42,6 +42,7 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 | GET | `/digital-twin/chokepoints` | Live (Phase 2) | chokepoint list | |
 | GET | `/digital-twin/refineries` | Live (Phase 2) | refinery list | |
 | GET | `/digital-twin/exposure` | Live (Phase 2) | exposure baseline | |
+| GET | `/digital-twin/names` | Live (Phase 2) | `{entity_id: name}` map | Frontend id-to-name resolution across all entity types |
 
 ## Knowledge Graph
 
@@ -58,7 +59,7 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 | Method | Path | Status | Request Schema | Response Schema | Notes |
 | --- | --- | --- | --- | --- | --- |
 | POST | `/scenarios/run` | Live (Phase 6) | `scenario_schema.ScenarioRequest` | `scenario_schema.ScenarioResult` | Runs `scenarios/scenario_engine.py` against YAML templates + graph/digital-twin-derived refinery exposure |
-| GET | `/scenarios/{scenario_id}` | Live (Phase 6) | - | `scenario_schema.ScenarioResult` | In-memory scenario retrieval |
+| GET | `/scenarios/{scenario_id}` | Live (Phase 6) | - | `scenario_schema.ScenarioResult` | In-memory retrieval, falling back to the Postgres-backed `scenario_runs` table if the process restarted and Postgres is reachable |
 
 ## Recommendations
 

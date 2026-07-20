@@ -56,3 +56,19 @@ def test_exposure_summary_includes_data_source_breakdown():
     assert "exposure_by_data_source" in summary
     total = sum(summary["exposure_by_data_source"].values())
     assert round(total, 3) == round(summary["total_supplier_exposure_percent"], 3)
+
+
+def test_refinery_supports_multiple_connected_import_ports():
+    """Regression test: `connected_import_port_ids` used to only ever
+    parse a single CSV value into a 1-item list, even though the schema
+    and every consumer already supported a full list. REF_JAM now connects
+    to both PRT_JAM and PRT_MUN (Mundra) - without this, no refinery in the
+    seed data connects to Mundra at all, silently breaking exposure
+    attribution for any route/scenario that resolves through it."""
+    service = DigitalTwinService()
+    service.load_seed_data()
+
+    jamnagar = service.find_refinery("REF_JAM")
+
+    assert jamnagar is not None
+    assert set(jamnagar.connected_import_port_ids) == {"PRT_JAM", "PRT_MUN"}

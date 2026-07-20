@@ -54,7 +54,7 @@ class ScenarioResult(EnergyShieldBaseModel):
     duration_days: int
     supply_at_risk_percent: float = Field(..., ge=0, le=100)
     estimated_delay_days: float = Field(..., ge=0)
-    freight_cost_impact_percent: float
+    freight_cost_impact_percent: float = Field(..., ge=0, le=300)
     affected_refineries: list[AffectedRefinery] = Field(default_factory=list)
     recommended_action_required: bool
     confidence: float = Field(..., ge=0.0, le=1.0)

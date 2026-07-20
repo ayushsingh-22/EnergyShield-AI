@@ -34,18 +34,23 @@ export default function Reports() {
   return (
     <div className="page page-reports">
       <div className="page-header">
-        <h1>Reports</h1>
+        <div>
+          <h1>Reports</h1>
+          <p className="page-header__copy">Generate an executive crisis-response brief and trace its full audit trail.</p>
+        </div>
       </div>
 
       <form className="panel inline-form" onSubmit={handleGenerate}>
-        <label htmlFor="report-scenario-id">Scenario ID</label>
-        <input
-          id="report-scenario-id"
-          type="text"
-          value={scenarioId}
-          onChange={(event) => setScenarioId(event.target.value)}
-          placeholder="e.g. SCN-20260719-0001"
-        />
+        <div>
+          <label htmlFor="report-scenario-id">Scenario ID</label>
+          <input
+            id="report-scenario-id"
+            type="text"
+            value={scenarioId}
+            onChange={(event) => setScenarioId(event.target.value)}
+            placeholder="e.g. SCN-20260719-0001"
+          />
+        </div>
         <button type="submit" className="primary-button" disabled={loading}>
           {loading ? 'Generating...' : 'Generate report'}
         </button>

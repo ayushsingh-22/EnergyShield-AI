@@ -6,6 +6,9 @@ See docs/API_REFERENCE.md for the endpoints this router owns.
 
 from __future__ import annotations
 
+import logging
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -13,7 +16,9 @@ from learning.backtesting import BacktestReport, run_backtest
 from learning.disruption_case_library import DisruptionCaseLibrary
 from learning.feedback_service import FeedbackService
 from learning.model_registry import ModelRegistry
-from models.learning_schema import FeedbackAction, FeedbackEntry, HistoricalCase, ModelVersion
+from models.learning_schema import FeedbackAction, FeedbackEntry, HistoricalCase, ModelVersion, ModelVersionStatus
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/learning", tags=["learning"])
 
@@ -22,6 +27,50 @@ _case_library.load_seed_data()
 _feedback_service = FeedbackService()
 _model_registry = ModelRegistry()
 _backtest_runs: dict[str, BacktestReport] = {}
+
+
+def _seed_active_model_version() -> None:
+    """Registers the risk-scoring model version that is actually running,
+    with metrics computed from a real backtest of the seeded historical
+    cases - not hardcoded numbers. This is the version every current risk
+    score is produced by, so `/models` reflects live reality instead of an
+    empty list. Precision/recall come from replaying the case library
+    through the real `ScenarioEngine` via `run_backtest`."""
+    try:
+        cases = _case_library.get_all()
+        report = run_backtest(cases) if cases else None
+        metrics = (
+            {
+                "precision": round(report.precision, 3),
+                "recall": round(report.recall, 3),
+                "false_alarm_rate": round(report.false_alarm_rate, 3),
+                "missed_event_rate": round(report.missed_event_rate, 3),
+            }
+            if report is not None
+            else {}
+        )
+        training_range = None
+        if cases:
+            years = sorted({case.start_date.year for case in cases})
+            training_range = f"{years[0]}-{years[-1]} seeded disruption cases" if years else None
+
+        _model_registry.register(
+            ModelVersion(
+                model_id="risk-scoring-v0.1",
+                model_name="risk-scoring",
+                version="0.1",
+                status=ModelVersionStatus.ACTIVE,
+                trained_at=datetime.now(timezone.utc),
+                training_data_range=training_range,
+                metrics=metrics,
+                owner="Abhishek Choudhary",
+            )
+        )
+    except Exception:  # noqa: BLE001 - registry seeding must never break startup/import
+        logger.exception("Failed to seed the active risk-scoring model version")
+
+
+_seed_active_model_version()
 
 
 class FeedbackRequest(BaseModel):
