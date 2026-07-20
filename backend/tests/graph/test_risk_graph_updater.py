@@ -6,9 +6,13 @@ from models.risk_schema import RiskScore
 
 
 class _FakeKGClient:
-    def __init__(self, match_targets):
+    def __init__(self, match_targets, available=True):
         self.match_targets = match_targets
+        self._available = available
         self.calls = []
+
+    def is_available(self) -> bool:
+        return self._available
 
     def run_query(self, cypher, parameters=None):
         parameters = parameters or {}
@@ -68,3 +72,15 @@ def test_update_risk_scores_counts_only_successful_updates():
     updated_count = risk_graph_updater.update_risk_scores(scores, client=fake)
 
     assert updated_count == 1
+
+
+def test_update_risk_scores_skips_quietly_when_graph_unavailable():
+    """With no Neo4j running, the whole batch is skipped without a
+    per-entity 'unknown graph entity' warning (returns 0, no queries)."""
+    fake = _FakeKGClient(match_targets={"CHK_HORMUZ"}, available=False)
+    scores = [_score("CHK_HORMUZ"), _score("CHK_UNKNOWN")]
+
+    updated_count = risk_graph_updater.update_risk_scores(scores, client=fake)
+
+    assert updated_count == 0
+    assert fake.calls == []

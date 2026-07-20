@@ -32,3 +32,10 @@ def get_risk_history(entity_id: str) -> list[RiskScore]:
     if not history:
         raise HTTPException(status_code=404, detail=f"No risk history found for '{entity_id}'")
     return history
+
+
+def get_risk_service() -> RiskService:
+    """Exposes the module-level `RiskService` singleton so Phase 10's
+    orchestration workers can recompute/read the same scores this router
+    serves, same pattern as `api/routes/events.py::get_event_service`."""
+    return _service

@@ -223,6 +223,192 @@ export const mockRecommendation = {
   created_at: '2026-07-10T09:05:00Z',
 }
 
+export const mockReportMarkdown = `# EnergyShield Executive Brief - Hormuz Partial Closure
+
+**Report ID:** RPT-SCN-20260710-0001
+**Scenario:** SCN-20260710-0001 | **Recommendation:** REC-SCN-20260710-0001
+
+## Executive Summary
+Crude Oil disruption scenario \`HORMUZ_PARTIAL_CLOSURE\` places **31%** of supply at risk with an estimated **9-day** delay.
+
+## Recommended Actions
+1. **Saudi Arabia** via East-West corridor to west coast India - Immediate
+
+## Strategic Reserve Action
+Drawdown recommended: 18% starting day 3.
+`
+
+export const mockGraphNeighborhood = {
+  nodes: [{ entity_id: 'CHK_HORMUZ', label: 'Chokepoint', properties: { name: 'Strait of Hormuz', risk_level: 'HIGH' } }],
+  edges: [
+    {
+      source_id: 'RT_BAS_JAM',
+      target_id: 'CHK_HORMUZ',
+      relationship_type: 'TRANSITS',
+      properties: {},
+      confidence: null,
+    },
+  ],
+  query_description: "Direct relationships for entity 'CHK_HORMUZ'",
+}
+
+export const mockGraphImpact = {
+  nodes: [
+    { entity_id: 'CHK_HORMUZ', label: 'Chokepoint', properties: { name: 'Strait of Hormuz' } },
+    { entity_id: 'RT_BAS_JAM', label: 'ShippingRoute', properties: { name: 'Basra to Jamnagar' } },
+    { entity_id: 'REF_JAM', label: 'Refinery', properties: { name: 'Reliance Jamnagar' } },
+  ],
+  edges: [
+    { source_id: 'RT_BAS_JAM', target_id: 'CHK_HORMUZ', relationship_type: 'TRANSITS', properties: {}, confidence: null },
+    { source_id: 'RT_BAS_JAM', target_id: 'REF_JAM', relationship_type: 'ARRIVES_AT', properties: {}, confidence: null },
+  ],
+  query_description: "Downstream impact of 'CHK_HORMUZ' within 2 hop(s)",
+}
+
+export const mockRiskHistory = [
+  {
+    entity_id: 'CHK_HORMUZ',
+    entity_type: 'CHOKEPOINT',
+    commodity_type: 'CRUDE_OIL',
+    risk_score: 71,
+    risk_level: 'HIGH',
+    previous_score: 58,
+    delta: 13,
+    top_drivers: ['Maritime alert clustering near Strait of Hormuz'],
+    evidence_event_ids: ['EVT-2026-0001'],
+    confidence: 0.8,
+    assumptions: [{ description: 'Demo heuristic.', is_simulated: true }],
+    audit_id: 'AUD-RISK-CHK_HORMUZ-1',
+    updated_at: '2026-07-09T09:00:00Z',
+  },
+  { ...mockCorridorRisk[0] },
+]
+
+export const mockAuditTrail = [
+  {
+    audit_id: 'AUD-000001',
+    entity_id: 'SCN-20260710-0001',
+    entity_type: 'SCENARIO',
+    action: 'SCENARIO_RUN',
+    actor: 'system',
+    timestamp: '2026-07-10T09:00:00Z',
+    source_event_ids: ['EVT-2026-0001'],
+    model_version: null,
+    summary: 'Ran HORMUZ_PARTIAL_CLOSURE scenario (31% supply at risk).',
+    details: { confidence: 0.84 },
+  },
+  {
+    audit_id: 'AUD-000002',
+    entity_id: 'REC-SCN-20260710-0001',
+    entity_type: 'RECOMMENDATION',
+    action: 'RECOMMENDATION_GENERATED',
+    actor: 'system',
+    timestamp: '2026-07-10T09:05:00Z',
+    source_event_ids: [],
+    model_version: null,
+    summary: 'Generated 2 procurement option(s) for SCN-20260710-0001.',
+    details: { confidence: 0.79, spr_drawdown_required: true },
+  },
+]
+
+export const mockLearningCases = [
+  {
+    case_id: 'CASE-REDSEA-2024-001',
+    case_name: 'Red Sea / Bab el-Mandeb shipping disruption (Houthi attacks)',
+    commodity_type: 'CRUDE_OIL',
+    start_date: '2023-11-19',
+    end_date: '2024-06-30',
+    trigger_events: ['MARITIME_ATTACK', 'AIS_REROUTING'],
+    affected_corridors: ['RED_SEA', 'SUEZ', 'BAB_EL_MANDEB'],
+    observed_outcomes: {
+      average_delay_days: 10,
+      freight_cost_increase_percent: 20,
+      route_shift_detected: true,
+      price_movement_percent: 5,
+    },
+    source_notes: 'Illustrative, based on public reporting; not audited historical statistics.',
+    is_simulated: true,
+  },
+  {
+    case_id: 'CASE-HORMUZ-2019-001',
+    case_name: 'Strait of Hormuz tanker incidents and seizures',
+    commodity_type: 'CRUDE_OIL',
+    start_date: '2019-05-12',
+    end_date: '2019-09-30',
+    trigger_events: ['MARITIME_ATTACK', 'POLITICAL_INSTABILITY'],
+    affected_corridors: ['HORMUZ'],
+    observed_outcomes: {
+      average_delay_days: 4,
+      freight_cost_increase_percent: 12,
+      route_shift_detected: false,
+      price_movement_percent: 8,
+    },
+    source_notes: 'Illustrative, based on public reporting; not audited historical statistics.',
+    is_simulated: true,
+  },
+]
+
+export const mockBacktestReport = {
+  run_id: 'BT-20260710120000',
+  precision: 0.8,
+  recall: 0.75,
+  false_alarm_rate: 0.2,
+  missed_event_rate: 0.25,
+  case_results: [
+    {
+      case_id: 'CASE-REDSEA-2024-001',
+      scenario_type: 'RED_SEA_SHIPPING_DISRUPTION',
+      predicted_materially_disruptive: true,
+      observed_materially_disruptive: true,
+      predicted_supply_at_risk_percent: 18.2,
+      predicted_confidence: 0.74,
+    },
+    {
+      case_id: 'CASE-HORMUZ-2019-001',
+      scenario_type: 'HORMUZ_PARTIAL_CLOSURE',
+      predicted_materially_disruptive: false,
+      observed_materially_disruptive: false,
+      predicted_supply_at_risk_percent: 8.4,
+      predicted_confidence: 0.7,
+    },
+  ],
+}
+
+export const mockFeedbackEntry = {
+  feedback_id: 'FB-000001',
+  recommendation_id: 'REC-SCN-20260710-0001',
+  useful: true,
+  action_taken: 'ACCEPTED',
+  rejection_reason: null,
+  submitted_by: 'analyst-demo',
+  submitted_at: '2026-07-10T09:10:00Z',
+}
+
+export const mockModelVersions = [
+  {
+    model_id: 'risk-scoring-v1',
+    model_name: 'risk-scoring',
+    version: '0.1',
+    status: 'ACTIVE',
+    trained_at: '2026-07-01T00:00:00Z',
+    training_data_range: '2019-2024 seeded cases',
+    metrics: { precision: 0.8, recall: 0.75 },
+    owner: 'Abhishek Choudhary',
+  },
+]
+
+export const mockCommodityEntities = {
+  commodity_type: 'CRUDE_OIL',
+  entity_count: 5,
+  entities: [
+    { entity_type: 'SUPPLIER_COUNTRY', entity_id: 'SUP_IRQ', name: 'Iraq' },
+    { entity_type: 'SUPPLIER_COUNTRY', entity_id: 'SUP_KSA', name: 'Saudi Arabia' },
+    { entity_type: 'CHOKEPOINT', entity_id: 'CHK_HORMUZ', name: 'Strait of Hormuz' },
+    { entity_type: 'REFINERY', entity_id: 'REF_JAM', name: 'Reliance Jamnagar' },
+    { entity_type: 'STRATEGIC_RESERVE_SITE', entity_id: 'SPR_MAN', name: 'Mangalore SPR' },
+  ],
+}
+
 export const mockCommodities = [
   {
     commodity_type: 'CRUDE_OIL',
@@ -234,10 +420,38 @@ export const mockCommodities = [
   },
   {
     commodity_type: 'LNG',
-    display_name: 'Lng',
+    display_name: 'LNG',
     unit: 'mmbtu',
     demand_sector_ids: ['Power', 'City gas'],
     risk_parameters: { status_weight: 0.5 },
     scenario_template_ids: ['LNG_SUPPLY_SHOCK'],
   },
 ]
+
+// id -> display name across every entity type, mirroring the backend's
+// GET /digital-twin/names. Lets mock mode resolve entity ids to names the
+// same way live mode does.
+export const mockEntityNames = {
+  SUP_IRQ: 'Iraq',
+  SUP_KSA: 'Saudi Arabia',
+  SUP_RUS: 'Russia',
+  SUP_UAE: 'United Arab Emirates',
+  SUP_USA: 'United States',
+  CHK_HORMUZ: 'Strait of Hormuz',
+  CHK_BAB: 'Bab el-Mandeb',
+  CHK_SUEZ: 'Suez Canal',
+  CHK_MALACCA: 'Strait of Malacca',
+  RT_BAS_JAM: 'Basra to Jamnagar',
+  RT_RAS_MUN: 'Ras Tanura to Mundra',
+  RT_NOV_JAM: 'Novorossiysk to Jamnagar',
+  RT_FUJ_MAN: 'Fujairah to Mangalore',
+  RT_HOU_PAR: 'Houston to Paradip',
+  REF_JAM: 'Reliance Jamnagar',
+  REF_PAR: 'Paradip Refinery',
+  REF_MUM: 'Mumbai Refinery',
+  REF_MAN: 'Mangalore Refinery',
+  REF_VIS: 'Visakhapatnam Refinery',
+  SPR_MAN: 'Mangalore SPR',
+  PRT_BASRA: 'Basra Oil Terminal',
+  PRT_RAS: 'Ras Tanura',
+}

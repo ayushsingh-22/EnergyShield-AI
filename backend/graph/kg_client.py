@@ -28,11 +28,19 @@ class KGClient:
         password: str | None = None,
         database: str | None = None,
         unavailable_retry_seconds: float = 30.0,
+        connection_timeout_seconds: float = 3.0,
     ):
         self.uri = uri or os.getenv("NEO4J_URI", "bolt://localhost:7687")
         self.user = user or os.getenv("NEO4J_USER", "neo4j")
         self.password = password or os.getenv("NEO4J_PASSWORD", "")
         self.database = database or os.getenv("NEO4J_DATABASE", "neo4j")
+        # The driver's own default connection timeout is tens of seconds
+        # (meant for real network hiccups against a server that's actually
+        # up); every API request that touches the graph would otherwise
+        # block that long before falling back, whenever Neo4j simply isn't
+        # running yet. A few seconds is enough to distinguish "unreachable"
+        # from "slow" while keeping graceful degradation actually graceful.
+        self._connection_timeout_seconds = connection_timeout_seconds
         self._driver = None
         # Once a connection attempt fails, every caller in the process
         # (dozens of run_query calls per event/risk-score pipeline run)
@@ -46,13 +54,32 @@ class KGClient:
 
     def _get_driver(self):
         if self._driver is None:
-            self._driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
+            self._driver = GraphDatabase.driver(
+                self.uri,
+                auth=(self.user, self.password),
+                connection_timeout=self._connection_timeout_seconds,
+            )
         return self._driver
 
     def _in_backoff(self) -> bool:
         if self._unavailable_since is None:
             return False
         return (time.monotonic() - self._unavailable_since) < self._unavailable_retry_seconds
+
+    def is_available(self) -> bool:
+        """Best-effort reachability check that never itself hits the network
+        when a recent failure is still inside the backoff window.
+
+        Lets batch writers (`risk_graph_updater`, `relationship_builder`)
+        skip the whole batch quietly when Neo4j is simply not running,
+        instead of emitting one "unknown graph entity" warning per entity -
+        the single "Neo4j unreachable ..." line from `run_query` already
+        says everything the operator needs. Returns True when a real Neo4j
+        is reachable (writes should proceed), False when it's known-down.
+        """
+        if self._in_backoff():
+            return False
+        return self.health()
 
     def health(self) -> bool:
         """Returns True if Neo4j is reachable, without raising."""
@@ -61,7 +88,14 @@ class KGClient:
             self._unavailable_since = None
             return True
         except Exception as exc:  # noqa: BLE001 - external service, must not crash caller
-            logger.warning("Neo4j health check failed: %s", exc)
+            # Log one concise line only on the first failure of a backoff
+            # window - a not-running Neo4j is an expected no-database mode,
+            # not an error worth the driver's full multi-line connect dump
+            # on every health probe. Graph queries fall back to the
+            # in-memory digital-twin graph (see graph/graph_queries.py).
+            if self._unavailable_since is None:
+                first_line = str(exc).strip().splitlines()[0]
+                logger.info("Neo4j not reachable; using in-memory graph fallback. Reason: %s", first_line)
             self._unavailable_since = time.monotonic()
             return False
 

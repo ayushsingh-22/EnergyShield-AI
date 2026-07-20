@@ -115,7 +115,10 @@ class DigitalTwinService:
                     name=row["name"],
                     owner=row["owner"],
                     capacity_bpd=float(row["capacity_bpd"]) if row.get("capacity_bpd") else None,
-                    connected_import_port_ids=[row["connected_import_port_ids"]] if row.get("connected_import_port_ids") else [],
+                    connected_import_port_ids=(
+                        [port_id.strip() for port_id in row["connected_import_port_ids"].split(";") if port_id.strip()]
+                        if row.get("connected_import_port_ids") else []
+                    ),
                     location_name=row["location_name"],
                     coordinates=Coordinates(latitude=float(row["lat"]), longitude=float(row["lon"])) if row.get("lat") and row.get("lon") else None
                 )

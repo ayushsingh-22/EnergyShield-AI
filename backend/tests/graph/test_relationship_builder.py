@@ -6,11 +6,17 @@ from models.event_schema import RiskEvent
 
 
 class _FakeKGClient:
-    def __init__(self, match_targets):
+    def __init__(self, match_targets, available=True):
         """`match_targets` is the set of entity_ids the fake graph "knows
-        about" - MATCH on any other id returns no rows, mirroring Neo4j."""
+        about" - MATCH on any other id returns no rows, mirroring Neo4j.
+        `available` mirrors a reachable Neo4j (writes proceed); set False to
+        simulate a not-running graph (batch writers skip quietly)."""
         self.match_targets = match_targets
+        self._available = available
         self.calls = []
+
+    def is_available(self) -> bool:
+        return self._available
 
     def run_query(self, cypher, parameters=None):
         parameters = parameters or {}
@@ -58,6 +64,18 @@ def test_upsert_event_relationships_skips_unknown_entities():
     edge_count = relationship_builder.upsert_event_relationships(event, client=fake)
 
     assert edge_count == 1
+
+
+def test_upsert_event_relationships_skips_quietly_when_graph_unavailable():
+    """When Neo4j isn't running, the whole event is skipped without a
+    per-entity 'unknown affected entity' warning (edge_count 0, no writes)."""
+    fake = _FakeKGClient(match_targets={"CHK_BAB"}, available=False)
+    event = _make_event(["CHK_BAB", "UNKNOWN_ENTITY"])
+
+    edge_count = relationship_builder.upsert_event_relationships(event, client=fake)
+
+    assert edge_count == 0
+    assert fake.calls == []  # no queries issued at all
 
 
 def test_expire_event_relationships_returns_expired_count():

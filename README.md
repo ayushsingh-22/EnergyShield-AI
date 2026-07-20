@@ -13,10 +13,20 @@ fertilizer, and critical minerals can be added later through adapters
 
 ## Status
 
-Repository foundation (Phase 0). Core Pydantic schemas, the API contract,
-and the local dev stack are in place; most `backend/` and `frontend/`
-modules are placeholder stubs to be filled in phase by phase per
-[`ENERGYSHIELD_IMPLEMENTATION_PLAN.md`](./ENERGYSHIELD_IMPLEMENTATION_PLAN.md).
+All 16 phases (0-15) are implemented - ingestion, digital twin, knowledge
+graph, event extraction, risk scoring, scenario modelling, procurement/SPR
+recommendations, backend persistence and audit trail, the full React
+dashboard, end-to-end orchestration, explainability/evaluation, continuous
+learning (backtesting, feedback, model registry), and multi-commodity
+adapters. See each phase's "Completion Status" section in
+[`ENERGYSHIELD_IMPLEMENTATION_PLAN.md`](./ENERGYSHIELD_IMPLEMENTATION_PLAN.md)
+for what was built, what's still illustrative/simulated pending live data
+sources, and testing caveats (this environment has no running
+Postgres/Neo4j, so persistence and the knowledge graph run in their
+documented graceful-degradation mode - see `docker-compose up` to run
+against the real thing). 214 backend tests pass
+(`cd backend && poetry run pytest`); the frontend was verified against
+`VITE_USE_MOCK_DATA=true` in a live browser session.
 
 ## Architecture
 
@@ -85,8 +95,25 @@ for the dashboard to reach the live API (or set
 the backend running).
 
 By default the frontend targets `VITE_USE_MOCK_DATA=true` (see
-`frontend/.env.example`), so UI work can proceed against
+`frontend/.env.example`; copy it to `frontend/.env.local` if that file
+doesn't already exist), so UI work can proceed against
 `frontend/src/api/mockData.js` before every backend endpoint is live.
+
+### Production-style deployment
+
+See [`deploy/README.md`](./deploy/README.md) for an overlay that builds
+immutable images and requires real secrets (no demo-password defaults)
+instead of the bind-mounted dev setup above.
+
+## Demo
+
+[`docs/DEMO_SCRIPT.md`](./docs/DEMO_SCRIPT.md) walks through the full
+signal-to-recommendation loop end to end - a seeded maritime alert
+triggers event extraction, the knowledge graph links it to affected
+routes/refineries, risk scores update, a scenario auto-triggers past the
+configured threshold, and procurement/SPR recommendations plus an
+executive report come out the other end, all through
+`backend/orchestration/workflows.py::run_full_pipeline`.
 
 ## Team Ownership
 

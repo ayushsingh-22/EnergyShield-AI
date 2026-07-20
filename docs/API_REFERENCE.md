@@ -42,6 +42,7 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 | GET | `/digital-twin/chokepoints` | Live (Phase 2) | chokepoint list | |
 | GET | `/digital-twin/refineries` | Live (Phase 2) | refinery list | |
 | GET | `/digital-twin/exposure` | Live (Phase 2) | exposure baseline | |
+| GET | `/digital-twin/names` | Live (Phase 2) | `{entity_id: name}` map | Frontend id-to-name resolution across all entity types |
 
 ## Knowledge Graph
 
@@ -57,44 +58,44 @@ Status legend: **Live** = implemented and wired into `backend/main.py`.
 
 | Method | Path | Status | Request Schema | Response Schema | Notes |
 | --- | --- | --- | --- | --- | --- |
-| POST | `/scenarios/run` | Live (Phase 6 demo) | `scenario_schema.ScenarioRequest` | `scenario_schema.ScenarioResult` | Deterministic demo simulation |
-| GET | `/scenarios/{scenario_id}` | Live (Phase 6 demo) | - | `scenario_schema.ScenarioResult` | In-memory scenario retrieval |
+| POST | `/scenarios/run` | Live (Phase 6) | `scenario_schema.ScenarioRequest` | `scenario_schema.ScenarioResult` | Runs `scenarios/scenario_engine.py` against YAML templates + graph/digital-twin-derived refinery exposure |
+| GET | `/scenarios/{scenario_id}` | Live (Phase 6) | - | `scenario_schema.ScenarioResult` | In-memory retrieval, falling back to the Postgres-backed `scenario_runs` table if the process restarted and Postgres is reachable |
 
 ## Recommendations
 
 | Method | Path | Status | Response Schema | Notes |
 | --- | --- | --- | --- | --- |
-| GET | `/recommendations/{scenario_id}` | Live (Phase 7 demo) | `recommendation_schema.Recommendation` | Generated from stored scenario output |
+| GET | `/recommendations/{scenario_id}` | Live (Phase 7) | `recommendation_schema.Recommendation` | Procurement options ranked via `optimization/procurement_optimizer.py`; SPR plan via `optimization/spr_optimizer.py` |
 
 ## Reports and Audit
 
 | Method | Path | Status | Notes |
 | --- | --- | --- | --- |
-| POST | `/reports/generate` | Live (Phase 8 demo) | Executive crisis-response report |
-| GET | `/audit/{entity_id}` | Planned (Phase 11) | Full audit trail for an event/scenario/recommendation |
+| POST | `/reports/generate` | Live (Phase 8) | Executive crisis-response report, includes a rendered Markdown brief |
+| GET | `/audit/{entity_id}` | Live (Phase 8 / Phase 11) | Full audit trail for an event/scenario/recommendation/report |
 
 ## Continuous Learning
 
 | Method | Path | Status | Notes |
 | --- | --- | --- | --- |
-| GET | `/learning/cases` | Planned (Phase 13) | Historical disruption case library |
-| GET | `/learning/cases/{case_id}` | Planned (Phase 13) | |
-| POST | `/learning/backtest` | Planned (Phase 13) | |
-| GET | `/learning/backtest/{run_id}` | Planned (Phase 13) | |
-| POST | `/learning/feedback` | Planned (Phase 13) | |
-| GET | `/learning/models` | Planned (Phase 13) | |
-| POST | `/learning/models/{model_id}/activate` | Planned (Phase 13) | |
+| GET | `/learning/cases` | Live (Phase 13) | Historical disruption case library, seeded from `data/seeds/demo_disruption_cases.json` |
+| GET | `/learning/cases/{case_id}` | Live (Phase 13) | |
+| POST | `/learning/backtest` | Live (Phase 13) | Replays cases through the current scenario engine; body: `case_ids?`, `flag_threshold_percent` |
+| GET | `/learning/backtest/{run_id}` | Live (Phase 13) | |
+| POST | `/learning/feedback` | Live (Phase 13) | |
+| GET | `/learning/models` | Live (Phase 13) | |
+| POST | `/learning/models/{model_id}/activate` | Live (Phase 13) | |
 
 ## Multi-Commodity
 
 | Method | Path | Status | Notes |
 | --- | --- | --- | --- |
-| GET | `/commodities` | Live (Phase 14 partial) | |
-| GET | `/commodities/{commodity_type}/entities` | Live (Phase 14 partial) | |
-| GET | `/commodities/{commodity_type}/risk` | Live (Phase 14 partial) | |
-| GET | `/commodities/{commodity_type}/scenarios` | Live (Phase 14 partial) | |
-| POST | `/commodities/{commodity_type}/scenarios/run` | Live (Phase 14 partial) | |
-| GET | `/commodities/{commodity_type}/recommendations/{scenario_id}` | Live (Phase 14 partial) | |
+| GET | `/commodities` | Live (Phase 14) | |
+| GET | `/commodities/{commodity_type}/entities` | Live (Phase 14) | Delegates to each commodity's `CommodityAdapter`; non-crude entities are illustrative/simulated |
+| GET | `/commodities/{commodity_type}/risk` | Live (Phase 14 partial) | Crude oil uses live risk scores; other commodities return a placeholder pending live ingestion |
+| GET | `/commodities/{commodity_type}/scenarios` | Live (Phase 14) | |
+| POST | `/commodities/{commodity_type}/scenarios/run` | Live (Phase 14) | |
+| GET | `/commodities/{commodity_type}/recommendations/{scenario_id}` | Live (Phase 14) | |
 
 ## Conventions
 

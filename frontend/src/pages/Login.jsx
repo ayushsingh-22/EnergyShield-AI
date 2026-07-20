@@ -1,13 +1,43 @@
+import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ProjectBrand from '../components/layout/ProjectBrand'
+import { login } from '../auth'
 
 export default function Login() {
+  const [name, setName] = useState('')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    login(name.trim() || 'Analyst')
+    navigate(location.state?.from?.pathname ?? '/', { replace: true })
+  }
+
   return (
     <div className="page page-login">
-      <ProjectBrand compact subtitle="Secure analyst access" />
-      <h1>Login</h1>
-      <p>
-        TODO(Phase 9): Analyst sign-in screen for authenticating access to the
-        EnergyShield AI platform before reaching the command center.
+      <ProjectBrand subtitle="Secure analyst access" />
+      <h1>Sign in</h1>
+      <p className="hero-copy">
+        Local demo session only - there is no backend authentication endpoint in the current API
+        contract. Enter any analyst name to continue to the command center.
+      </p>
+      <form className="login-form" onSubmit={handleSubmit}>
+        <label htmlFor="analyst-name">Analyst name</label>
+        <input
+          id="analyst-name"
+          type="text"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="e.g. J. Analyst"
+          autoFocus
+        />
+        <button type="submit" className="primary-button">
+          Enter command center
+        </button>
+      </form>
+      <p className="field-hint" style={{ marginTop: '16px' }}>
+        Demo session only - no password required.
       </p>
     </div>
   )

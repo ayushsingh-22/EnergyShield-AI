@@ -1,5 +1,5 @@
 entity_id,name,owner,capacity_bpd,connected_import_port_ids,location_name,lat,lon
-REF_JAM,Reliance Jamnagar,private,1240000,PRT_JAM,Jamnagar,22.36,69.96
+REF_JAM,Reliance Jamnagar,private,1240000,PRT_JAM;PRT_MUN,Jamnagar,22.36,69.96
 REF_PAR,IOCL Paradip,public,300000,PRT_PAR,Paradip,20.26,86.63
 REF_MUM,BPCL Mumbai,public,240000,PRT_MUM,Mumbai,18.99,72.90
 REF_MAN,MRPL Mangalore,public,300000,PRT_MAN,Mangalore,12.97,74.84
