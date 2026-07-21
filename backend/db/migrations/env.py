@@ -14,6 +14,18 @@ BACKEND_ROOT = Path(__file__).resolve().parents[2]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+# Alembic runs as its own process (separate from main.py), so load .env here
+# too - otherwise `alembic upgrade head` would silently ignore a DATABASE_URL
+# set only in .env and fall back to the localhost default, failing against a
+# managed/deployed database. Searches upward from cwd, finding the repo-root
+# .env whether alembic is invoked from backend/ or the repo root.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:  # python-dotenv always installed, but never hard-fail migrations on it
+    pass
+
 from storage.repository import metadata  # noqa: E402
 
 config = context.config

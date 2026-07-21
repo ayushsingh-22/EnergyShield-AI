@@ -24,7 +24,7 @@ crashes or blocks on a bad feed.
 | `sanctions_collector` | **OFAC SDN** CSV (`treasury.gov`) | No | ✅ Verified live | `OFAC_SDN_URL` |
 | `portwatch_collector` | **IMF PortWatch** ArcGIS FeatureServer | No | ✅ Verified live | `PORTWATCH_API_URL` |
 | `gdelt_collector` | **GDELT DOC 2.1 API** | No | ✅ Live (rate-limited: 1 req / 5 s) | `GDELT_API_URL`, `GDELT_QUERY` |
-| `ais_collector` | **AISHub** webservice (Strait of Hormuz box) | Username | ⚠️ Needs `AISHUB_USERNAME` (data-sharing member); seeded until set | `AISHUB_URL`, `AISHUB_USERNAME` |
+| `ais_collector` | **AISStream.io** (primary), **AISHub** (secondary) — Strait of Hormuz box | AISStream: free instant key; AISHub: username | ⚠️ Set `AISSTREAM_API_KEY` (or `AISHUB_USERNAME`); seeded until one is set | `AISSTREAM_API_KEY`, `AISHUB_USERNAME` |
 | `maritime_alert_collector` | (still seeded) | — | Seeded | — |
 | `import_baseline_collector` | (still seeded) | — | Seeded | — |
 
@@ -34,7 +34,8 @@ crashes or blocks on a bad feed.
 - **OFAC SDN** — the full Specially Designated Nationals list (CSV, ~5 MB). The collector filters to vessels + energy/maritime-relevant names and caps at 15 new entries per poll.
 - **IMF PortWatch** — free ArcGIS layer; the collector reads the chokepoint transit baseline (Hormuz, Suez, Bab el-Mandeb, Malacca, Panama).
 - **GDELT** — free, no key, but **hard-limited to one request every 5 seconds** per IP; the scheduler's default 15-minute refresh is well within that. Transient SSL/timeout failures fall back to seeded data.
-- **AISHub** — requires joining the AISHub data-sharing program to get a **username** (there is no API key). Rate-limited to **1 request/minute**. Until `AISHUB_USERNAME` is set, this collector uses seeded data.
+- **AISStream.io** (primary vessel feed) — free, instant API key at <https://aisstream.io> (sign up → API key). It's a **WebSocket** stream, so the collector connects, gathers position reports in the Hormuz box for `AISSTREAM_COLLECT_SECONDS` (default 6), then disconnects and summarises. Set `AISSTREAM_API_KEY` to enable.
+- **AISHub** (secondary vessel feed) — requires joining the AISHub data-sharing program to get a **username** (there is no API key). Rate-limited to **1 request/minute**. Used only if `AISSTREAM_API_KEY` is unset and `AISHUB_USERNAME` is set. Until one of the two is set, this collector uses seeded data.
 
 ## Security
 

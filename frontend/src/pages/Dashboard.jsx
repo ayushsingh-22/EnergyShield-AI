@@ -8,6 +8,7 @@ import {
 } from '../api/energyShieldApi'
 import { SkeletonList } from '../components/layout/Skeleton'
 import RiskScoreCard from '../components/risk/RiskScoreCard'
+import { useEntityName } from '../context/EntityNamesContext'
 import { humanize } from '../utils/format'
 
 function formatTimestamp(value) {
@@ -23,6 +24,7 @@ function highestLevel(scores) {
 }
 
 export default function Dashboard() {
+  const resolveName = useEntityName()
   const [state, setState] = useState({
     health: null,
     freshness: [],
@@ -116,7 +118,7 @@ export default function Dashboard() {
           <div className="kpi-tile">
             <span className="kpi-tile__label">Top corridor score</span>
             <span className="kpi-tile__value">{topRisks[0]?.risk_score ?? '—'}</span>
-            <span className="kpi-tile__sub">{topRisks[0]?.entity_id ?? 'No scores yet'}</span>
+            <span className="kpi-tile__sub">{topRisks[0] ? resolveName(topRisks[0].entity_id) : 'No scores yet'}</span>
           </div>
         </div>
       )}
