@@ -8,10 +8,7 @@ const NAV_ITEMS = [
   { to: '/scenarios', label: 'Scenario Simulator', icon: '◈' },
   { to: '/recommendations', label: 'Recommendations', icon: '✓' },
   { to: '/map', label: 'Energy Map', icon: '◉' },
-  { to: '/graph', label: 'Knowledge Graph', icon: '⁙' },
-  { to: '/learning', label: 'Learning Center', icon: '△' },
   { to: '/reports', label: 'Reports', icon: '≡' },
-  { to: '/commodities', label: 'Commodities', icon: '●' },
 ]
 
 export default function AppLayout() {
@@ -46,6 +43,9 @@ export default function AppLayout() {
           ))}
         </nav>
         <div className="app-layout__sidebar-footer">
+          <NavLink to="/settings" className={({ isActive }) => isActive ? 'app-layout__nav-link app-layout__nav-link--active' : 'app-layout__nav-link'}>
+            <span className="app-layout__nav-icon" aria-hidden="true">⚙</span> Settings
+          </NavLink>
           <span>{analystName ?? 'Analyst'}</span>
           <button type="button" className="link-button" onClick={handleSignOut}>
             Sign out

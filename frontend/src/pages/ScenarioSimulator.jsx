@@ -83,8 +83,8 @@ export default function ScenarioSimulator() {
         </div>
       </div>
 
-      <section className="card-grid">
-        <form className="panel scenario-form" onSubmit={handleSubmit}>
+      <section style={{ display: 'flex', gap: 'var(--space-5)', alignItems: 'stretch' }}>
+        <form className="panel scenario-form" style={{ flex: 1, minWidth: 0 }} onSubmit={handleSubmit}>
           <h2>Run a scenario</h2>
 
           <label htmlFor="scenario_type">Scenario type</label>
@@ -163,7 +163,7 @@ export default function ScenarioSimulator() {
           {error && <p className="error-banner">{error}</p>}
         </form>
 
-        <div className="panel">
+        <div className="panel" style={{ flex: 1, minWidth: 0 }}>
           <h2>Result</h2>
           <ScenarioResultPanel result={result} />
         </div>

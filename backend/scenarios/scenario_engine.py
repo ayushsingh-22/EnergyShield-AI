@@ -188,6 +188,8 @@ class ScenarioEngine:
             supply_at_risk_percent=min(100.0, supply_at_risk_percent),
             estimated_delay_days=estimated_delay_days,
             freight_cost_impact_percent=freight_cost_impact_percent,
+            fuel_price_increase_percent=round(min(100.0, supply_at_risk_percent) * 0.4, 1),
+            gdp_impact_percent=round(min(100.0, supply_at_risk_percent) * 0.015, 2),
             affected_refineries=affected_refineries,
             recommended_action_required=supply_at_risk_percent >= 15.0 or estimated_delay_days >= 7.0,
             confidence=confidence,

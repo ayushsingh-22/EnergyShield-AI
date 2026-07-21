@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   getCorridorRisk,
-  getDataFreshness,
   getHealth,
   getLatestEvents,
   getSupplierRisk,
@@ -25,7 +24,6 @@ function highestLevel(scores) {
 export default function Dashboard() {
   const [state, setState] = useState({
     health: null,
-    freshness: [],
     latestEvents: [],
     corridorRisk: [],
     supplierRisk: [],
@@ -38,15 +36,14 @@ export default function Dashboard() {
 
     async function load() {
       try {
-        const [health, freshness, latestEvents, corridorRisk, supplierRisk] = await Promise.all([
+        const [health, latestEvents, corridorRisk, supplierRisk] = await Promise.all([
           getHealth(),
-          getDataFreshness(),
           getLatestEvents(5),
           getCorridorRisk(),
           getSupplierRisk(),
         ])
         if (!cancelled) {
-          setState({ health, freshness, latestEvents, corridorRisk, supplierRisk, loading: false, error: null })
+          setState({ health, latestEvents, corridorRisk, supplierRisk, loading: false, error: null })
         }
       } catch (error) {
         if (!cancelled) setState((current) => ({ ...current, loading: false, error: error.message }))
@@ -62,7 +59,6 @@ export default function Dashboard() {
   const allRisk = [...state.corridorRisk, ...state.supplierRisk]
   const topRisks = [...allRisk].sort((a, b) => b.risk_score - a.risk_score).slice(0, 4)
   const activeEventCount = state.latestEvents.length
-  const staleSourceCount = state.freshness.filter((source) => source.is_stale).length
   const worstLevel = allRisk.length ? highestLevel(allRisk) : 'LOW'
 
   let statusPillClass = 'status-pill'
@@ -81,8 +77,27 @@ export default function Dashboard() {
     <div className="page page-dashboard">
       <div className="page-header">
         <div>
-          <h1>Command Center</h1>
-          <p className="page-header__copy">Live overview of corridor/supplier risk, recent signals, and source health.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <h1>Command Center</h1>
+            <select
+              className="commodity-selector"
+              style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border)' }}
+              defaultValue="CRUDE_OIL"
+              onChange={(e) => {
+                if (e.target.value !== 'CRUDE_OIL') {
+                  alert(`Support for ${e.target.value} is coming in a future expansion. For now, the MVP focuses on Crude Oil.`)
+                  e.target.value = 'CRUDE_OIL'
+                }
+              }}
+            >
+              <option value="CRUDE_OIL">Crude Oil</option>
+              <option value="LNG">LNG</option>
+              <option value="COAL">Coal</option>
+              <option value="FERTILIZER">Fertilizer</option>
+              <option value="CRITICAL_MINERALS">Critical Minerals</option>
+            </select>
+          </div>
+          <p className="page-header__copy">Live overview of corridor/supplier risk and recent signals.</p>
         </div>
         <span className={statusPillClass}>
           <span className="status-pill__dot" aria-hidden="true" />
@@ -106,13 +121,7 @@ export default function Dashboard() {
             <span className="kpi-tile__value">{activeEventCount}</span>
             <span className="kpi-tile__sub">Detected in the last feed refresh</span>
           </div>
-          <div className="kpi-tile">
-            <span className="kpi-tile__label">Data sources</span>
-            <span className="kpi-tile__value">{state.freshness.length}</span>
-            <span className="kpi-tile__sub">
-              {staleSourceCount > 0 ? `${staleSourceCount} stale` : 'All within freshness window'}
-            </span>
-          </div>
+
           <div className="kpi-tile">
             <span className="kpi-tile__label">Top corridor score</span>
             <span className="kpi-tile__value">{topRisks[0]?.risk_score ?? '—'}</span>
@@ -161,24 +170,6 @@ export default function Dashboard() {
           )}
         </article>
 
-        <article className="panel">
-          <h2>Data Freshness</h2>
-          <p className="panel-copy">Source registry health from the ingestion layer.</p>
-          {state.loading ? (
-            <SkeletonList rows={3} />
-          ) : (
-            <ul className="data-list">
-              {state.freshness.map((source) => (
-                <li key={source.source_name}>
-                  <strong>{source.source_name}</strong>
-                  <span>{humanize(source.reliability_tier)}</span>
-                  <span>{formatTimestamp(source.last_successful_fetch_at)}</span>
-                </li>
-              ))}
-              {!state.freshness.length && <li>No source health data yet.</li>}
-            </ul>
-          )}
-        </article>
       </section>
 
       <section className="panel">
@@ -186,7 +177,7 @@ export default function Dashboard() {
         <p className="panel-copy">
           Run a disruption scenario in <strong>Scenario Simulator</strong>, then review the ranked
           procurement/SPR plan in <strong>Recommendations</strong>. Every generated output is traceable
-          in <strong>Reports</strong> and <strong>Learning Center</strong>'s audit trail.
+          in <strong>Reports</strong>'s audit trail.
         </p>
       </section>
     </div>

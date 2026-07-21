@@ -39,6 +39,8 @@ class _FakeScenarioService:
             supply_at_risk_percent=30.0,
             estimated_delay_days=5.0,
             freight_cost_impact_percent=10.0,
+            fuel_price_increase_percent=12.0,
+            gdp_impact_percent=0.45,
             affected_refineries=[],
             recommended_action_required=True,
             confidence=0.8,

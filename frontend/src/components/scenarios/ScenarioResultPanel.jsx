@@ -30,7 +30,15 @@ export default function ScenarioResultPanel({ result }) {
         </div>
         <div className="metric">
           <span className="metric__label">Freight cost impact</span>
-          <strong className="metric__value">{result.freight_cost_impact_percent}%</strong>
+          <strong className="metric__value">+{result.freight_cost_impact_percent}%</strong>
+        </div>
+        <div className="metric">
+          <span className="metric__label">Est. Fuel Price Hike</span>
+          <strong className="metric__value">+{result.fuel_price_increase_percent}%</strong>
+        </div>
+        <div className="metric">
+          <span className="metric__label">Est. GDP Drag</span>
+          <strong className="metric__value">-{result.gdp_impact_percent}%</strong>
         </div>
         <div className="metric">
           <span className="metric__label">Confidence</span>

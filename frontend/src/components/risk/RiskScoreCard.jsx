@@ -53,16 +53,18 @@ export default function RiskScoreCard({ score, onSelectEvidence, selected = fals
       ) : (
         <p className="risk-score-card__drivers-empty">No active risk drivers.</p>
       )}
-      {score.evidence_event_ids?.length ? (
-        <button
-          type="button"
-          className="link-button"
-          onClick={() => onSelectEvidence?.(score.evidence_event_ids)}
-        >
-          {score.evidence_event_ids.length} evidence event(s)
-        </button>
-      ) : null}
-      <p className="risk-score-card__confidence">Confidence {Math.round((score.confidence ?? 0) * 100)}%</p>
+      <div className="risk-score-card__footer">
+        {score.evidence_event_ids?.length ? (
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => onSelectEvidence?.(score.evidence_event_ids)}
+          >
+            {score.evidence_event_ids.length} evidence event(s)
+          </button>
+        ) : null}
+        <p className="risk-score-card__confidence">Confidence {Math.round((score.confidence ?? 0) * 100)}%</p>
+      </div>
     </div>
   )
 }

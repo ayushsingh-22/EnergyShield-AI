@@ -14,6 +14,8 @@ def _result(**overrides) -> ScenarioResult:
         supply_at_risk_percent=20.0,
         estimated_delay_days=5.0,
         freight_cost_impact_percent=10.0,
+        fuel_price_increase_percent=8.0,
+        gdp_impact_percent=0.3,
         affected_refineries=[],
         recommended_action_required=True,
         confidence=0.8,
