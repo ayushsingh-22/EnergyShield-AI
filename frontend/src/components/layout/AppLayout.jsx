@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/scenarios', label: 'Scenario Simulator', icon: '◈' },
   { to: '/recommendations', label: 'Recommendations', icon: '✓' },
   { to: '/map', label: 'Energy Map', icon: '◉' },
+  { to: '/commodities', label: 'Commodities', icon: '●' },
   { to: '/reports', label: 'Reports', icon: '≡' },
 ]
 

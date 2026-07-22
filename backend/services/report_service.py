@@ -10,18 +10,32 @@ from models.scenario_schema import ScenarioResult
 from reports.formatting import humanize
 from reports.report_builder import build_markdown_report
 from services.audit_service import AuditService
+from services.digital_twin_service import DigitalTwinService
 from storage import repository
 
 
+def _load_default_digital_twin() -> DigitalTwinService:
+    digital_twin = DigitalTwinService()
+    digital_twin.load_seed_data()
+    return digital_twin
+
+
 class ReportService:
-    def __init__(self, audit_service: AuditService | None = None) -> None:
+    def __init__(
+        self, audit_service: AuditService | None = None, digital_twin: DigitalTwinService | None = None
+    ) -> None:
         self._audit_service = audit_service
+        self._digital_twin = digital_twin or _load_default_digital_twin()
 
     def generate_report(self, scenario: ScenarioResult, recommendation: Recommendation) -> dict[str, object]:
         generated_at = datetime.now(timezone.utc)
         report_id = f"RPT-{scenario.scenario_id}"
         markdown = build_markdown_report(
-            report_id=report_id, generated_at=generated_at, scenario=scenario, recommendation=recommendation
+            report_id=report_id,
+            generated_at=generated_at,
+            scenario=scenario,
+            recommendation=recommendation,
+            digital_twin=self._digital_twin,
         )
 
         audit_id = recommendation.audit_id

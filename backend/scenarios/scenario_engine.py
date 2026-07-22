@@ -12,6 +12,7 @@ import yaml
 from ingestion.source_registry import get_freshness_state
 from models.core_schema import Assumption, RiskLevel
 from models.scenario_schema import AffectedRefinery, ScenarioRequest, ScenarioResult, ScenarioType
+from reports.formatting import humanize as _humanize
 from risk.exposure_model import get_exposed_refineries
 from scenarios import impact_model
 from services.digital_twin_service import DigitalTwinService
@@ -43,6 +44,18 @@ _ENTITY_LABEL_MAP: dict[str, list[str]] = {
 }
 
 _STALE_BASELINE_DAYS = 90
+
+
+def _is_simulated_text(text: str) -> bool:
+    """An assumption is `is_simulated` only if its own wording says so
+    (e.g. "cargo ownership is simulated") rather than "estimated" (e.g.
+    "import share data is estimated") - matching the distinction
+    docs/SCENARIO_ASSUMPTIONS.md already draws between real-ish directional
+    data and fully fabricated placeholders. Previously every template
+    assumption was tagged `is_simulated=True` unconditionally, which made
+    an "estimated" (real, if imprecise) figure indistinguishable from a
+    "simulated" (fabricated) one in the API/UI."""
+    return "simulated" in text.lower()
 
 
 @dataclass
@@ -140,15 +153,25 @@ class ScenarioEngine:
             stale_baseline=stale_baseline,
         )
 
-        assumptions = [Assumption(description=text, is_simulated=True) for text in template.assumptions]
+        assumptions = [
+            Assumption(description=text, is_simulated=_is_simulated_text(text)) for text in template.assumptions
+        ]
         if overrides_used:
+            # Disclosure that the user supplied a value directly - not
+            # simulated/fabricated data, just naming which inputs are
+            # user-provided rather than template/graph-derived.
             assumptions.append(
                 Assumption(
-                    description=f"Manual overrides applied for: {', '.join(overrides_used)}.",
-                    is_simulated=True,
+                    description=(
+                        f"Manual overrides applied for: {', '.join(_humanize(field) for field in overrides_used)}."
+                    ),
+                    is_simulated=False,
                 )
             )
         if not resolved_specific:
+            # The fallback heuristic itself uses real capacity data (see
+            # `_resolve_affected_refineries`), just not a specific graph
+            # chain - "estimated," not fabricated.
             assumptions.append(
                 Assumption(
                     description=(
@@ -156,27 +179,29 @@ class ScenarioEngine:
                         "refinery exposure is estimated from overall capacity share rather than the "
                         "supply chain graph."
                     ),
-                    is_simulated=True,
+                    is_simulated=False,
                 )
             )
         elif template.unresolved_labels:
             # Some, but not all, of the template's labels resolved - still
             # counts as "uses graph relationships" overall, but the gap
-            # itself must not disappear silently.
+            # itself must not disappear silently. Factual disclosure of a
+            # data gap, not simulated data.
             assumptions.append(
                 Assumption(
                     description=(
                         f"Template references entities with no digital-twin mapping yet: "
                         f"{', '.join(template.unresolved_labels)}; these contribute no graph-derived exposure."
                     ),
-                    is_simulated=True,
+                    is_simulated=False,
                 )
             )
         if stale_baseline:
+            # Factual statement about data freshness, not simulated data.
             assumptions.append(
                 Assumption(
                     description="India import baseline data is older than one quarter.",
-                    is_simulated=True,
+                    is_simulated=False,
                 )
             )
 
@@ -196,6 +221,18 @@ class ScenarioEngine:
             assumptions=assumptions,
             created_at=created_at,
         )
+
+    def _describe_entities(self, entity_ids: list[str]) -> str:
+        """Human names for a list of digital-twin entity ids, comma-joined
+        for prose (e.g. "Mumbai Port, Paradip Port" instead of raw
+        "PRT_MUM, PRT_PAR"). Falls back to the raw id for anything the twin
+        doesn't know about (e.g. an unresolved template label) rather than
+        dropping it silently."""
+        names = []
+        for entity_id in entity_ids:
+            entity = self._digital_twin.find_entity(entity_id)
+            names.append(entity.name if entity is not None else entity_id)
+        return ", ".join(names)
 
     def _resolve_affected_refineries(
         self, entity_ids: list[str], severity: RiskLevel
@@ -223,7 +260,10 @@ class ScenarioEngine:
                         )
 
         if weighted:
-            reason = f"Digital-twin supply chain graph links this refinery to affected entities: {', '.join(entity_ids)}."
+            reason = (
+                "Digital-twin supply chain graph links this refinery to affected entities: "
+                f"{self._describe_entities(entity_ids)}."
+            )
             refineries = [
                 AffectedRefinery(refinery_id=row["refinery_id"], exposure_level=exposure_level, reason=reason)
                 for row in weighted.values()

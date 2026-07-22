@@ -7,10 +7,26 @@ from datetime import datetime
 from models.recommendation_schema import Recommendation
 from models.scenario_schema import ScenarioResult
 from reports.formatting import humanize as _humanize
+from services.digital_twin_service import DigitalTwinService
+
+
+def _refinery_label(refinery_id: str, digital_twin: DigitalTwinService | None) -> str:
+    """Human-readable refinery label for report prose (e.g. "Reliance
+    Jamnagar" instead of raw "REF_JAM"), falling back to the id if the twin
+    doesn't know about it or wasn't supplied."""
+    if digital_twin is None:
+        return refinery_id
+    refinery = digital_twin.find_refinery(refinery_id)
+    return refinery.name if refinery is not None else refinery_id
 
 
 def build_markdown_report(
-    *, report_id: str, generated_at: datetime, scenario: ScenarioResult, recommendation: Recommendation
+    *,
+    report_id: str,
+    generated_at: datetime,
+    scenario: ScenarioResult,
+    recommendation: Recommendation,
+    digital_twin: DigitalTwinService | None = None,
 ) -> str:
     """Renders a human-readable Markdown crisis-response brief (section 8.3
     output: "Markdown or PDF-ready report payload")."""
@@ -35,7 +51,10 @@ def build_markdown_report(
 
     if scenario.affected_refineries:
         for refinery in scenario.affected_refineries:
-            lines.append(f"- **{refinery.refinery_id}** ({_humanize(refinery.exposure_level)}): {refinery.reason}")
+            label = _refinery_label(refinery.refinery_id, digital_twin)
+            lines.append(
+                f"- **{label}** (`{refinery.refinery_id}`, {_humanize(refinery.exposure_level)}): {refinery.reason}"
+            )
     else:
         lines.append("- No specific refinery exposure resolved.")
 

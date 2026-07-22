@@ -118,3 +118,32 @@ def test_confidence_decreases_when_entities_unresolved():
         created_at=datetime.now(timezone.utc),
     )
     assert unresolved.confidence < resolved.confidence
+
+
+def test_assumption_is_simulated_reflects_its_own_wording_not_hardcoded_true():
+    """Regression test: every template assumption used to be tagged
+    `is_simulated=True` unconditionally, even ones whose own text says
+    "estimated" (real-ish directional data) rather than "simulated"
+    (fabricated placeholder) - collapsing a distinction
+    docs/SCENARIO_ASSUMPTIONS.md explicitly documents. coal_import_disruption
+    is a good fixture because its template mixes both kinds of wording."""
+    engine = ScenarioEngine(_digital_twin())
+    result = engine.run(
+        _request(scenario_type=ScenarioType.COAL_IMPORT_DISRUPTION, commodity_type=CommodityType.COAL),
+        scenario_id="SCN-SIMULATED-FLAG",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    by_text = {a.description: a.is_simulated for a in result.assumptions}
+    assert by_text["Import share data is estimated"] is False
+    assert by_text["Exact cargo ownership is simulated"] is True
+    assert by_text["Rail corridor bottleneck impact on last-mile delivery is simulated"] is True
+
+    # Disclosures about the fallback methodology / data gaps are factual,
+    # not simulated data, so they must not carry is_simulated=True either.
+    fallback_disclosures = [
+        a
+        for a in result.assumptions
+        if "could not be matched to specific digital-twin nodes" in a.description
+    ]
+    assert fallback_disclosures and all(a.is_simulated is False for a in fallback_disclosures)

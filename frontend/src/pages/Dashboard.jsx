@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   getCorridorRisk,
   getHealth,
@@ -6,6 +7,8 @@ import {
   getSupplierRisk,
 } from '../api/energyShieldApi'
 import { SkeletonList } from '../components/layout/Skeleton'
+import { useEntityName } from '../context/EntityNamesContext'
+import EvidenceEventsModal from '../components/risk/EvidenceEventsModal'
 import RiskScoreCard from '../components/risk/RiskScoreCard'
 import { humanize } from '../utils/format'
 
@@ -22,6 +25,7 @@ function highestLevel(scores) {
 }
 
 export default function Dashboard() {
+  const resolveName = useEntityName()
   const [state, setState] = useState({
     health: null,
     latestEvents: [],
@@ -30,6 +34,7 @@ export default function Dashboard() {
     loading: true,
     error: null,
   })
+  const [evidenceEventIds, setEvidenceEventIds] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -77,27 +82,11 @@ export default function Dashboard() {
     <div className="page page-dashboard">
       <div className="page-header">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h1>Command Center</h1>
-            <select
-              className="commodity-selector"
-              style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border)' }}
-              defaultValue="CRUDE_OIL"
-              onChange={(e) => {
-                if (e.target.value !== 'CRUDE_OIL') {
-                  alert(`Support for ${e.target.value} is coming in a future expansion. For now, the MVP focuses on Crude Oil.`)
-                  e.target.value = 'CRUDE_OIL'
-                }
-              }}
-            >
-              <option value="CRUDE_OIL">Crude Oil</option>
-              <option value="LNG">LNG</option>
-              <option value="COAL">Coal</option>
-              <option value="FERTILIZER">Fertilizer</option>
-              <option value="CRITICAL_MINERALS">Critical Minerals</option>
-            </select>
-          </div>
-          <p className="page-header__copy">Live overview of corridor/supplier risk and recent signals.</p>
+          <h1>Command Center</h1>
+          <p className="page-header__copy">
+            Live overview of corridor/supplier risk and recent signals. Switch commodities in{' '}
+            <Link to="/commodities">Commodities</Link>.
+          </p>
         </div>
         <span className={statusPillClass}>
           <span className="status-pill__dot" aria-hidden="true" />
@@ -125,7 +114,7 @@ export default function Dashboard() {
           <div className="kpi-tile">
             <span className="kpi-tile__label">Top corridor score</span>
             <span className="kpi-tile__value">{topRisks[0]?.risk_score ?? '—'}</span>
-            <span className="kpi-tile__sub">{topRisks[0]?.entity_id ?? 'No scores yet'}</span>
+            <span className="kpi-tile__sub">{topRisks[0] ? resolveName(topRisks[0].entity_id) : 'No scores yet'}</span>
           </div>
         </div>
       )}
@@ -137,9 +126,9 @@ export default function Dashboard() {
           {state.loading ? (
             <SkeletonList rows={3} />
           ) : (
-            <div className="risk-card-grid">
+            <div className="risk-card-grid risk-card-grid--compact">
               {topRisks.map((score) => (
-                <RiskScoreCard key={score.entity_id} score={score} />
+                <RiskScoreCard key={score.entity_id} score={score} onSelectEvidence={setEvidenceEventIds} />
               ))}
               {!topRisks.length && <p className="panel-copy">No risk scores available yet.</p>}
             </div>
@@ -180,6 +169,10 @@ export default function Dashboard() {
           in <strong>Reports</strong>'s audit trail.
         </p>
       </section>
+
+      {evidenceEventIds && (
+        <EvidenceEventsModal eventIds={evidenceEventIds} onClose={() => setEvidenceEventIds(null)} />
+      )}
     </div>
   )
 }

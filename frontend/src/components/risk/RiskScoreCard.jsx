@@ -58,7 +58,10 @@ export default function RiskScoreCard({ score, onSelectEvidence, selected = fals
           <button
             type="button"
             className="link-button"
-            onClick={() => onSelectEvidence?.(score.evidence_event_ids)}
+            onClick={(event) => {
+              event.stopPropagation()
+              onSelectEvidence?.(score.evidence_event_ids)
+            }}
           >
             {score.evidence_event_ids.length} evidence event(s)
           </button>

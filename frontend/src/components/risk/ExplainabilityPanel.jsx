@@ -2,7 +2,7 @@
 import { useEntityName } from '../../context/EntityNamesContext'
 import { humanize } from '../../utils/format'
 
-export default function ExplainabilityPanel({ score }) {
+export default function ExplainabilityPanel({ score, onSelectEvidence }) {
   const resolveName = useEntityName()
   if (!score) {
     return (
@@ -32,7 +32,15 @@ export default function ExplainabilityPanel({ score }) {
       {score.evidence_event_ids?.length ? (
         <ul className="assumption-list">
           {score.evidence_event_ids.map((eventId) => (
-            <li key={eventId}>{eventId}</li>
+            <li key={eventId}>
+              {onSelectEvidence ? (
+                <button type="button" className="link-button" onClick={() => onSelectEvidence([eventId])}>
+                  {eventId}
+                </button>
+              ) : (
+                eventId
+              )}
+            </li>
           ))}
         </ul>
       ) : (

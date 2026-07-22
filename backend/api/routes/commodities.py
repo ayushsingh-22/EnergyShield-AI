@@ -20,6 +20,7 @@ from models.commodity_schema import CommodityDefinition
 from models.core_schema import Assumption, CommodityType, EntityType, RiskLevel
 from models.risk_schema import RiskScore
 from models.scenario_schema import ScenarioRequest, ScenarioResult
+from reports.formatting import humanize
 from services.digital_twin_service import DigitalTwinService
 from services.risk_service import RiskService
 
@@ -53,7 +54,7 @@ def _load_definitions() -> dict[CommodityType, CommodityDefinition]:
         commodity_type = CommodityType(item["commodity_type"])
         definitions[commodity_type] = CommodityDefinition(
             commodity_type=commodity_type,
-            display_name=item["commodity_type"].replace("_", " ").title(),
+            display_name=humanize(item["commodity_type"]),
             unit={
                 CommodityType.CRUDE_OIL: "barrel",
                 CommodityType.LNG: "mmbtu",

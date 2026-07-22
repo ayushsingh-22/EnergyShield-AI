@@ -4,6 +4,7 @@ import { getCorridorRisk, getRiskHistory, getSupplierRisk } from '../api/energyS
 import { useEntityName } from '../context/EntityNamesContext'
 import { SkeletonList } from '../components/layout/Skeleton'
 import ExplainabilityPanel from '../components/risk/ExplainabilityPanel'
+import EvidenceEventsModal from '../components/risk/EvidenceEventsModal'
 import RiskScoreCard from '../components/risk/RiskScoreCard'
 
 export default function RiskMonitor() {
@@ -14,6 +15,7 @@ export default function RiskMonitor() {
   const [history, setHistory] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [evidenceEventIds, setEvidenceEventIds] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -82,7 +84,11 @@ export default function RiskMonitor() {
                 role="button"
                 tabIndex={0}
               >
-                <RiskScoreCard score={score} selected={score.entity_id === selected?.entity_id} />
+                <RiskScoreCard
+                  score={score}
+                  selected={score.entity_id === selected?.entity_id}
+                  onSelectEvidence={setEvidenceEventIds}
+                />
               </div>
             ))}
             {!corridorRisk.length && <p className="panel-copy">No corridor scores available yet.</p>}
@@ -106,7 +112,11 @@ export default function RiskMonitor() {
                 role="button"
                 tabIndex={0}
               >
-                <RiskScoreCard score={score} selected={score.entity_id === selected?.entity_id} />
+                <RiskScoreCard
+                  score={score}
+                  selected={score.entity_id === selected?.entity_id}
+                  onSelectEvidence={setEvidenceEventIds}
+                />
               </div>
             ))}
             {!supplierRisk.length && <p className="panel-copy">No supplier scores available yet.</p>}
@@ -134,9 +144,13 @@ export default function RiskMonitor() {
 
         <article className="panel">
           <h2>Explainability</h2>
-          <ExplainabilityPanel score={selected} />
+          <ExplainabilityPanel score={selected} onSelectEvidence={setEvidenceEventIds} />
         </article>
       </section>
+
+      {evidenceEventIds && (
+        <EvidenceEventsModal eventIds={evidenceEventIds} onClose={() => setEvidenceEventIds(null)} />
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import AppLayout from './components/layout/AppLayout'
 import RequireAuth from './components/layout/RequireAuth'
 import { EntityNamesProvider } from './context/EntityNamesContext'
+import CommodityCommandCenter from './pages/CommodityCommandCenter'
 import Dashboard from './pages/Dashboard'
 import EnergyMap from './pages/EnergyMap'
 import Login from './pages/Login'
@@ -31,6 +32,7 @@ function App() {
           <Route path="/scenarios" element={<ScenarioSimulator />} />
           <Route path="/recommendations" element={<RecommendationCenter />} />
           <Route path="/map" element={<EnergyMap />} />
+          <Route path="/commodities" element={<CommodityCommandCenter />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
         </Route>

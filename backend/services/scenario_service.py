@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from itertools import count
 
 from models.scenario_schema import ScenarioRequest, ScenarioResult
+from reports.formatting import humanize
 from scenarios.scenario_engine import ScenarioEngine
 from services.audit_service import AuditService
 from storage import repository
@@ -32,7 +33,10 @@ class ScenarioService:
                 entity_id=result.scenario_id,
                 entity_type="SCENARIO",
                 action="SCENARIO_RUN",
-                summary=f"Ran {result.scenario_type} scenario ({result.supply_at_risk_percent}% supply at risk).",
+                summary=(
+                    f"Ran {humanize(result.scenario_type)} scenario "
+                    f"({result.supply_at_risk_percent}% supply at risk)."
+                ),
                 details={"confidence": result.confidence},
             )
         return result

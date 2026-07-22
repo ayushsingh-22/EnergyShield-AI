@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getCommodities, getCommodityEntities, getCommodityRisk, getCommodityScenarios } from '../api/energyShieldApi'
 import CommoditySelector from '../components/commodities/CommoditySelector'
 import { SkeletonList } from '../components/layout/Skeleton'
+import EvidenceEventsModal from '../components/risk/EvidenceEventsModal'
 import RiskScoreCard from '../components/risk/RiskScoreCard'
 import { humanize } from '../utils/format'
 
@@ -14,6 +15,7 @@ export default function CommodityCommandCenter() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [entityLoading, setEntityLoading] = useState(true)
+  const [evidenceEventIds, setEvidenceEventIds] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -103,7 +105,6 @@ export default function CommodityCommandCenter() {
                   <li key={entity.entity_id}>
                     <strong>{entity.name}</strong>
                     <span>{humanize(entity.entity_type)}</span>
-                    {entity.is_simulated && <span className="tag tag--simulated">simulated</span>}
                   </li>
                 ))}
                 {!entities?.entities?.length && <li>No entities loaded for this commodity yet.</li>}
@@ -114,19 +115,23 @@ export default function CommodityCommandCenter() {
           <article className="panel">
             <h2>Risk cards</h2>
             {entityLoading ? (
-              <div className="risk-card-grid">
+              <div className="risk-card-grid risk-card-grid--compact">
                 <SkeletonList rows={2} />
               </div>
             ) : (
-              <div className="risk-card-grid">
+              <div className="risk-card-grid risk-card-grid--compact">
                 {risk.map((score) => (
-                  <RiskScoreCard key={score.entity_id} score={score} />
+                  <RiskScoreCard key={score.entity_id} score={score} onSelectEvidence={setEvidenceEventIds} />
                 ))}
                 {!risk.length && <p className="panel-copy">No risk scores available for this commodity yet.</p>}
               </div>
             )}
           </article>
         </section>
+      )}
+
+      {evidenceEventIds && (
+        <EvidenceEventsModal eventIds={evidenceEventIds} onClose={() => setEvidenceEventIds(null)} />
       )}
     </div>
   )

@@ -175,7 +175,19 @@ class RiskScoringEngine:
             confidence=_compute_confidence(events, has_exposure_data=exposure_score > 0),
             assumptions=[
                 Assumption(
-                    description="Risk formula weights are heuristic demo values pending Phase 11 calibration.",
+                    # Not "pending Phase 11" - explainability (Phase 11) and
+                    # threshold calibration (Phase 13's
+                    # learning.model_trainer.calibrate_flag_threshold) both
+                    # exist. The honest caveat is that calibration is a
+                    # grid-search over the small seeded historical case set
+                    # (learning/disruption_case_library.py), not a trained
+                    # statistical model - a data-volume limitation, not a
+                    # missing feature.
+                    description=(
+                        "Risk formula weights (0.30/0.20/0.20/0.15/0.15) are analyst-set starting "
+                        "values; automated calibration exists but is only as good as the small "
+                        "seeded historical case set it grid-searches against."
+                    ),
                     is_simulated=True,
                 )
             ],

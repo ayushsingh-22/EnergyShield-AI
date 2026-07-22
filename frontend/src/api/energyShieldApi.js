@@ -69,6 +69,15 @@ export async function getLatestEvents(limit = 10) {
   return request(`/events/latest?limit=${encodeURIComponent(limit)}`)
 }
 
+export async function getEvent(eventId) {
+  if (USE_MOCK_DATA) {
+    const found = mock.mockLatestEvents.find((event) => event.event_id === eventId)
+    if (!found) throw new Error(`EnergyShield API error 404: event '${eventId}' not found`)
+    return found
+  }
+  return request(`/events/${encodeURIComponent(eventId)}`)
+}
+
 export async function getCorridorRisk() {
   if (USE_MOCK_DATA) return mock.mockCorridorRisk
   return request('/risk/corridors')
