@@ -45,6 +45,24 @@ _REGISTRY: Dict[str, DataSourceDefinition] = {
         fallback_mode="seeded_sample",
         enabled=True,
     ),
+    "lng_prices": DataSourceDefinition(
+        source_name="lng_prices",
+        category="prices",
+        url="https://api.eia.gov/v2/natural-gas/pri/fut/data/",
+        refresh_interval_minutes=1440, # Daily
+        reliability_tier=SourceReliability.HIGH,
+        fallback_mode="seeded_sample",
+        enabled=True,
+    ),
+    "coal_prices": DataSourceDefinition(
+        source_name="coal_prices",
+        category="prices",
+        url="https://www.worldbank.org/en/research/commodity-markets",
+        refresh_interval_minutes=43200, # Monthly (Pink Sheet cadence)
+        reliability_tier=SourceReliability.HIGH,
+        fallback_mode="seeded_sample",
+        enabled=True,
+    ),
     "ais_stream": DataSourceDefinition(
         source_name="ais_stream",
         category="vessel_movement",

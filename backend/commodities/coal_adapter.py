@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from commodities.base_adapter import CommodityAdapter
+from ingestion.coal_price_collector import CoalPriceCollector
 from models.scenario_schema import ScenarioType
 
 # Illustrative seed set (section 14.4 entities); coal ingestion is
@@ -53,11 +54,24 @@ _SUPPLY_CHAIN_ENTITIES: list[dict[str, Any]] = [
 class CoalAdapter(CommodityAdapter):
     commodity_type = "COAL"
 
+    def __init__(self, price_collector: CoalPriceCollector | None = None):
+        self._price_collector = price_collector or CoalPriceCollector()
+
     def get_supply_chain_entities(self) -> list[dict[str, Any]]:
         return list(_SUPPLY_CHAIN_ENTITIES)
 
     def get_risk_features(self, signals: list[dict[str, Any]]) -> dict[str, float]:
-        return {"signal_count": float(len(signals)), "rail_bottleneck_index": 0.4}
+        # Supply-chain entities above are still an illustrative scaffold
+        # (no real supplier/port-share ingestion yet), but the price signal
+        # itself is real: Newcastle (Australia) benchmark via the World
+        # Bank Pink Sheet (`ingestion/coal_price_collector.py`).
+        price_records = self._price_collector.fetch()
+        is_price_anomaly = any("Anomaly" in (record.title or "") for record in price_records)
+        return {
+            "signal_count": float(len(signals)),
+            "rail_bottleneck_index": 0.4,
+            "price_anomaly_detected": 1.0 if is_price_anomaly else 0.0,
+        }
 
     def get_scenario_templates(self) -> list[str]:
         return [ScenarioType.COAL_IMPORT_DISRUPTION.value]

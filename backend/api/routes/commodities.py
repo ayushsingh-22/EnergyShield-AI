@@ -100,6 +100,34 @@ def _roadmap_risk(commodity_type: CommodityType) -> list[RiskScore]:
     # 0..100 band the risk engine uses.
     score = round(min(100.0, max(0.0, concentration * 100.0)), 1)
     entity_count = len(adapter.get_supply_chain_entities())
+    top_drivers = [
+        f"Structural supplier-concentration index {concentration:.2f} across {entity_count} scaffolded entities.",
+    ]
+
+    # Coal/LNG have a real live price feed wired in (World Bank Pink Sheet /
+    # EIA Henry Hub - see ingestion/coal_price_collector.py and
+    # ingestion/lng_price_collector.py) even though their supply-chain
+    # entities above are still a scaffold; surface that real signal when present.
+    has_price_signal = "price_anomaly_detected" in features
+    price_anomaly = bool(features.get("price_anomaly_detected", 0.0))
+    if has_price_signal:
+        if price_anomaly:
+            score = round(min(100.0, score + 15.0), 1)
+            top_drivers.append("Live benchmark price move exceeded the anomaly threshold this period.")
+        else:
+            top_drivers.append("Live benchmark price feed active; no anomaly threshold breached this period.")
+    top_drivers.append("Roadmap commodity: supply-chain entities are a structural scaffold, not live ingestion streams.")
+
+    assumption_text = (
+        f"{commodity_type.value} supply-chain entities are illustrative and not yet backed by live ingestion; "
+        "risk score combines a structural supplier-concentration estimate with a live benchmark price signal."
+        if has_price_signal
+        else (
+            f"{commodity_type.value} has no live signal ingestion yet; risk is a structural "
+            "supplier-concentration estimate, not an event-driven live score."
+        )
+    )
+
     return [
         RiskScore(
             entity_id=f"{commodity_type.value}_GLOBAL",
@@ -109,21 +137,10 @@ def _roadmap_risk(commodity_type: CommodityType) -> list[RiskScore]:
             risk_level=_risk_level_for(score),
             previous_score=None,
             delta=None,
-            top_drivers=[
-                f"Structural supplier-concentration index {concentration:.2f} across {entity_count} scaffolded entities.",
-                "Roadmap commodity: score reflects structural concentration only, not live ingestion streams.",
-            ],
+            top_drivers=top_drivers,
             evidence_event_ids=[],
-            confidence=0.5,
-            assumptions=[
-                Assumption(
-                    description=(
-                        f"{commodity_type.value} has no live signal ingestion yet; risk is a structural "
-                        "supplier-concentration estimate, not an event-driven live score."
-                    ),
-                    is_simulated=True,
-                )
-            ],
+            confidence=0.6 if has_price_signal else 0.5,
+            assumptions=[Assumption(description=assumption_text, is_simulated=not has_price_signal)],
             audit_id=f"AUD-{commodity_type.value}-ROADMAP",
             updated_at=datetime.now(timezone.utc),
         )

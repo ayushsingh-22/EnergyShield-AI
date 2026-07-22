@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from commodities.base_adapter import CommodityAdapter
+from ingestion.lng_price_collector import LngPriceCollector
 from models.scenario_schema import ScenarioType
 
 # Illustrative seed set (section 14.3 entities) - real LNG supplier/
@@ -62,11 +63,24 @@ _SUPPLY_CHAIN_ENTITIES: list[dict[str, Any]] = [
 class LngAdapter(CommodityAdapter):
     commodity_type = "LNG"
 
+    def __init__(self, price_collector: LngPriceCollector | None = None):
+        self._price_collector = price_collector or LngPriceCollector()
+
     def get_supply_chain_entities(self) -> list[dict[str, Any]]:
         return list(_SUPPLY_CHAIN_ENTITIES)
 
     def get_risk_features(self, signals: list[dict[str, Any]]) -> dict[str, float]:
-        return {"signal_count": float(len(signals)), "supplier_concentration_index": 0.65}
+        # Supply-chain entities above are still an illustrative scaffold
+        # (no real supplier/terminal-share ingestion yet), but the price
+        # signal itself is real: Henry Hub natural gas via EIA, used as an
+        # LNG feedstock proxy (`ingestion/lng_price_collector.py`).
+        price_records = self._price_collector.fetch()
+        is_price_anomaly = any("Anomaly" in (record.title or "") for record in price_records)
+        return {
+            "signal_count": float(len(signals)),
+            "supplier_concentration_index": 0.65,
+            "price_anomaly_detected": 1.0 if is_price_anomaly else 0.0,
+        }
 
     def get_scenario_templates(self) -> list[str]:
         return [ScenarioType.LNG_SUPPLY_SHOCK.value]
