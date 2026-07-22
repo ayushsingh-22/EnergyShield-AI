@@ -29,14 +29,107 @@ In the modern geopolitical landscape, supply chain disruptions (from canal block
 - **🤖 Agentic Procurement AI**: When a severe disruption is modeled or detected, an ensemble of AI agents automatically analyzes the digital twin to rank alternative suppliers, compute rerouting logistics, and recommend Strategic Petroleum Reserve (SPR) drawdowns.
 - **💼 Analyst Command Center**: A premium, executive-level React dashboard that abstracts complex graph mathematics and AI orchestration into clean, actionable intelligence for policymakers and procurement officers.
 
-## 🏗️ Architecture & Tech Stack
+## 🏗️ System Architecture
 
-EnergyShield-AI is built on a scalable, modern microservices architecture designed to be completely commodity-agnostic (easily scaling beyond Crude Oil to LNG, Coal, and Critical Minerals).
+EnergyShield-AI is built on a scalable, event-driven microservices architecture. The diagram below illustrates the complete signal-to-recommendation data flow:
 
-* **Frontend**: React (Vite), Vanilla CSS (Premium Dark/Cream aesthetics), Recharts for data visualization.
-* **Backend**: Python, FastAPI, Pydantic (Strict Schema Validation).
-* **AI & Orchestration**: Agentic Ensemble Pattern, Event-driven architecture.
-* **Database**: Neo4j (Knowledge Graph / Supply Chain Mapping).
+```mermaid
+flowchart TD
+    subgraph SOURCES["🌐 LIVE DATA SOURCES"]
+        S1["📰 GDELT\nGeopolitical News"]
+        S2["🚫 OFAC SDN\nSanctions Data"]
+        S3["⚓ IMF PortWatch\nChokepoint Activity"]
+        S4["📈 EIA / Alpha Vantage\nCommodity Prices"]
+    end
+
+    subgraph INGESTION["⚙️ INGESTION & NORMALIZATION PIPELINE"]
+        I1["Event Collector\n& Normalizer"]
+        I2["Sanctions\nCollector"]
+        I3["Commodity Price\nCollector"]
+    end
+
+    subgraph AGENTS["🤖 AI AGENT ENSEMBLE"]
+        A1["Event Extraction\nAgent"]
+        A2["Entity Resolution\nAgent"]
+        A3["Geopolitical Risk\nAgent"]
+        A4["Report\nAgent"]
+    end
+
+    subgraph GRAPH["🕸️ NEO4J DIGITAL TWIN"]
+        G1["Suppliers\n& Chokepoints"]
+        G2["Shipping Routes\n& Ports"]
+        G3["Refineries\n& Demand Centers"]
+        G4["Risk Events\n& Sanctions"]
+    end
+
+    subgraph CORE["🧠 CORE INTELLIGENCE ENGINE"]
+        C1["Risk Scoring\nEngine"]
+        C2["Scenario\nSimulator"]
+        C3["Procurement\nOptimizer"]
+        C4["SPR\nOptimizer"]
+    end
+
+    subgraph API["🔌 FASTAPI BACKEND"]
+        P1["REST API\n/api/v1"]
+        P2["Event Bus &\nOrchestration"]
+        P3["Audit &\nLearning Loop"]
+    end
+
+    subgraph FRONTEND["💼 ANALYST COMMAND CENTER (React)"]
+        F1["📊 Risk Monitor\nDashboard"]
+        F2["⚡ Scenario\nSimulator UI"]
+        F3["📋 Procurement\nRecommendations"]
+        F4["🗺️ Energy Map\n& Reports"]
+    end
+
+    S1 --> I1
+    S2 --> I2
+    S3 --> I1
+    S4 --> I3
+
+    I1 --> A1
+    I1 --> A2
+    I2 --> A2
+    I3 --> C1
+
+    A1 --> A3
+    A2 --> G4
+    A3 --> G4
+
+    G1 & G2 & G3 & G4 --> C1
+    C1 --> C2
+    C2 --> C3
+    C2 --> C4
+    C1 --> A4
+
+    C1 & C2 & C3 & C4 & A4 --> P1
+    P2 --> AGENTS
+    P3 --> C1
+
+    P1 --> F1
+    P1 --> F2
+    P1 --> F3
+    P1 --> F4
+
+    style SOURCES fill:#1a1a2e,stroke:#e94560,color:#fff
+    style INGESTION fill:#16213e,stroke:#0f3460,color:#fff
+    style AGENTS fill:#0f3460,stroke:#533483,color:#fff
+    style GRAPH fill:#533483,stroke:#e94560,color:#fff
+    style CORE fill:#1a1a2e,stroke:#e94560,color:#fff
+    style API fill:#16213e,stroke:#0f3460,color:#fff
+    style FRONTEND fill:#0f3460,stroke:#533483,color:#fff
+```
+
+### Tech Stack Summary
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 18, Vite, Recharts | Analyst Command Center dashboard |
+| **Backend** | Python, FastAPI, Pydantic | REST API, data validation, orchestration |
+| **AI / Agents** | Agentic Ensemble Pattern | Event extraction, risk analysis, recommendations |
+| **Graph Database** | Neo4j | Supply chain Digital Twin knowledge graph |
+| **Data Sources** | GDELT, OFAC, PortWatch, EIA | Live geopolitical & commodity intelligence |
+
 
 ## 🚀 Quickstart & Setup
 
