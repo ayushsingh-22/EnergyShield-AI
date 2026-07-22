@@ -31,105 +31,84 @@ In the modern geopolitical landscape, supply chain disruptions (from canal block
 
 ## 🏗️ System Architecture
 
-EnergyShield-AI is built on a scalable, event-driven microservices architecture. The diagram below illustrates the complete signal-to-recommendation data flow:
+EnergyShield-AI follows a clean **6-layer signal-to-decision pipeline** — from raw global signals to actionable procurement intelligence.
 
 ```mermaid
-flowchart TD
-    subgraph SOURCES["🌐 LIVE DATA SOURCES"]
-        S1["📰 GDELT\nGeopolitical News"]
-        S2["🚫 OFAC SDN\nSanctions Data"]
-        S3["⚓ IMF PortWatch\nChokepoint Activity"]
-        S4["📈 EIA / Alpha Vantage\nCommodity Prices"]
+flowchart LR
+
+    subgraph L1["  📡  LAYER 1 — DATA ACQUISITION  "]
+        direction TB
+        S1["GDELT\nGeopolitical News"]
+        S2["OFAC SDN\nSanctions List"]
+        S3["IMF PortWatch\nMaritime Activity"]
+        S4["EIA · Alpha Vantage\nCommodity Prices"]
     end
 
-    subgraph INGESTION["⚙️ INGESTION & NORMALIZATION PIPELINE"]
-        I1["Event Collector\n& Normalizer"]
+    subgraph L2["  ⚙️  LAYER 2 — INGESTION & NORMALIZATION  "]
+        direction TB
+        I1["Event &\nNews Collector"]
         I2["Sanctions\nCollector"]
         I3["Commodity Price\nCollector"]
     end
 
-    subgraph AGENTS["🤖 AI AGENT ENSEMBLE"]
+    subgraph L3["  🤖  LAYER 3 — AI AGENT ENSEMBLE  "]
+        direction TB
         A1["Event Extraction\nAgent"]
         A2["Entity Resolution\nAgent"]
         A3["Geopolitical Risk\nAgent"]
-        A4["Report\nAgent"]
     end
 
-    subgraph GRAPH["🕸️ NEO4J DIGITAL TWIN"]
-        G1["Suppliers\n& Chokepoints"]
+    subgraph L4["  🕸️  LAYER 4 — NEO4J DIGITAL TWIN  "]
+        direction TB
+        G1["Suppliers &\nChokepoints"]
         G2["Shipping Routes\n& Ports"]
-        G3["Refineries\n& Demand Centers"]
-        G4["Risk Events\n& Sanctions"]
+        G3["Refineries &\nDemand Centers"]
     end
 
-    subgraph CORE["🧠 CORE INTELLIGENCE ENGINE"]
+    subgraph L5["  🧠  LAYER 5 — INTELLIGENCE ENGINE  "]
+        direction TB
         C1["Risk Scoring\nEngine"]
         C2["Scenario\nSimulator"]
         C3["Procurement\nOptimizer"]
         C4["SPR\nOptimizer"]
     end
 
-    subgraph API["🔌 FASTAPI BACKEND"]
-        P1["REST API\n/api/v1"]
-        P2["Event Bus &\nOrchestration"]
-        P3["Audit &\nLearning Loop"]
+    subgraph L6["  💼  LAYER 6 — ANALYST COMMAND CENTER  "]
+        direction TB
+        F1["Risk Monitor\nDashboard"]
+        F2["Scenario\nSimulator UI"]
+        F3["Procurement\nRecommendations"]
+        F4["Energy Map\n& Reports"]
     end
 
-    subgraph FRONTEND["💼 ANALYST COMMAND CENTER (React)"]
-        F1["📊 Risk Monitor\nDashboard"]
-        F2["⚡ Scenario\nSimulator UI"]
-        F3["📋 Procurement\nRecommendations"]
-        F4["🗺️ Energy Map\n& Reports"]
-    end
+    L1 ==>|"Raw Signals"| L2
+    L2 ==>|"Structured Events"| L3
+    L3 ==>|"Classified Entities"| L4
+    L4 ==>|"Graph Context"| L5
+    L5 ==>|"REST API / FastAPI"| L6
 
-    S1 --> I1
-    S2 --> I2
-    S3 --> I1
-    S4 --> I3
-
-    I1 --> A1
-    I1 --> A2
-    I2 --> A2
-    I3 --> C1
-
-    A1 --> A3
-    A2 --> G4
-    A3 --> G4
-
-    G1 & G2 & G3 & G4 --> C1
-    C1 --> C2
-    C2 --> C3
-    C2 --> C4
-    C1 --> A4
-
-    C1 & C2 & C3 & C4 & A4 --> P1
-    P2 --> AGENTS
-    P3 --> C1
-
-    P1 --> F1
-    P1 --> F2
-    P1 --> F3
-    P1 --> F4
-
-    style SOURCES fill:#1a1a2e,stroke:#e94560,color:#fff
-    style INGESTION fill:#16213e,stroke:#0f3460,color:#fff
-    style AGENTS fill:#0f3460,stroke:#533483,color:#fff
-    style GRAPH fill:#533483,stroke:#e94560,color:#fff
-    style CORE fill:#1a1a2e,stroke:#e94560,color:#fff
-    style API fill:#16213e,stroke:#0f3460,color:#fff
-    style FRONTEND fill:#0f3460,stroke:#533483,color:#fff
+    style L1 fill:#0D1B2A,stroke:#4A90D9,stroke-width:2px,color:#E8F4FD
+    style L2 fill:#0D1B2A,stroke:#27AE60,stroke-width:2px,color:#E8F4FD
+    style L3 fill:#0D1B2A,stroke:#8E44AD,stroke-width:2px,color:#E8F4FD
+    style L4 fill:#0D1B2A,stroke:#E67E22,stroke-width:2px,color:#E8F4FD
+    style L5 fill:#0D1B2A,stroke:#E74C3C,stroke-width:2px,color:#E8F4FD
+    style L6 fill:#0D1B2A,stroke:#1ABC9C,stroke-width:2px,color:#E8F4FD
 ```
 
-### Tech Stack Summary
+> **End-to-end flow:** Global signals are ingested, classified by AI agents, stored in a Neo4j knowledge graph modelling the supply chain as a Digital Twin, scored by the Risk Engine, simulated for downstream economic impact, and surfaced to analysts through a premium React dashboard — all in real-time.
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | React 18, Vite, Recharts | Analyst Command Center dashboard |
-| **Backend** | Python, FastAPI, Pydantic | REST API, data validation, orchestration |
-| **AI / Agents** | Agentic Ensemble Pattern | Event extraction, risk analysis, recommendations |
-| **Graph Database** | Neo4j | Supply chain Digital Twin knowledge graph |
-| **Data Sources** | GDELT, OFAC, PortWatch, EIA | Live geopolitical & commodity intelligence |
+---
 
+### Tech Stack
+
+| Layer | Technology | Role |
+|---|---|---|
+| **Data Acquisition** | GDELT · OFAC · IMF PortWatch · EIA | Live geopolitical & commodity intelligence |
+| **Ingestion** | Python, Pydantic | Normalization, deduplication, source registry |
+| **AI Agents** | Agentic Ensemble (Python) | Event extraction, entity resolution, risk reasoning |
+| **Digital Twin** | Neo4j Graph Database | Supply chain relationship mapping & traversal |
+| **Intelligence Engine** | FastAPI, custom ML models | Risk scoring, scenario modelling, procurement optimization |
+| **Analyst Dashboard** | React 18 · Vite · Recharts | Executive command center for policymakers |
 
 ## 🚀 Quickstart & Setup
 
