@@ -94,5 +94,13 @@ This repository directly fulfills the "What You May Build" suggestions from the 
 - ✅ **Scenario Modeler** (Calculates cascading effects: supply, delay, freight cost, fuel price, GDP)
 - ✅ **Actionable Recommendations** (AI-ranked alternative suppliers and SPR plans)
 
+## 👥 Team Ownership
+
+| Role                                          | Person             | Core Responsibility                                                                     |
+| --------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------- |
+| Frontend and Backend Lead                     | Ayush Kumar        | Frontend dashboard, backend APIs, database integration, report generation, deployment   |
+| ML and Agents Lead                            | Abhishek Choudhary | Event extraction, risk scoring, scenario modelling, continuous learning, explainability |
+| Data, Orchestration, and Knowledge Graph Lead | Mayur Raj          | Data ingestion, schedulers, orchestration, knowledge graph, procurement orchestration   |
+
 ## 📄 License
 This project is licensed under the MIT License - see the LICENSE file for details.
