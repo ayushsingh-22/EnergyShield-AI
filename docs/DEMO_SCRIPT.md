@@ -1,111 +1,172 @@
 # EnergyShield AI - Demo Script
 
-A 3-5 minute walkthrough built directly on the Phase 12 "Recommended Demo
-Flow" (`ENERGYSHIELD_IMPLEMENTATION_PLAN.md`). Each step below is written
-as something a presenter can read aloud or closely paraphrase.
+Narration script synced to `Video Project 2.mp4` (repo root, 3:20 / 200s),
+a screen-recorded live walkthrough of the running app. Read this aloud
+while the recording plays, or use it as narration for a fresh live demo
+in the same click order - the timestamps below are targets, not hard cuts.
 
-## Setup Checklist Before Demoing
+Each scene opens by naming the exact capability ET AI Hackathon 2026
+Problem Statement 2 ("AI-Driven Energy Supply Chain Resilience for
+Import-Dependent Economies") asks for, so the mapping to the judging
+rubric is explicit throughout.
 
-- [ ] Run `docker-compose up --build` and confirm `backend`, `frontend`,
-      `postgres`, `neo4j`, and `redis` are all healthy (`GET
-      /api/v1/health`).
-- [ ] Load seed data: suppliers, ports, refineries, SPR sites, chokepoints,
-      and routes from `data/seeds/` into Postgres and the graph
-      (`backend/graph/seed_graph.py`), and confirm `/api/v1/digital-twin/map`
-      returns non-empty layers.
-- [ ] Pre-run one scenario (`RED_SEA_SHIPPING_DISRUPTION`) so a completed
-      scenario, recommendation, and report already exist as a fallback if
-      the live run is slow or a network-dependent step fails during the
-      demo.
-- [ ] Confirm the seeded Red Sea maritime alert (or equivalent sample
-      record) used in Step 3 is present and not already consumed by a
-      prior demo run.
-- [ ] Open the dashboard in a browser tab and the API docs
-      (`/docs`) in a second tab in case a live API call needs to be shown
-      directly.
+## Setup Checklist Before Recording/Presenting
+
+- [ ] Run `docker-compose up --build` (or the frontend alone with
+      `VITE_USE_MOCK_DATA=true`) and confirm the app is reachable.
+- [ ] Confirm seed data loaded: suppliers, ports, refineries, SPR sites,
+      chokepoints, and routes from `data/seeds/`.
+- [ ] Sign in as an analyst on the login screen.
+- [ ] Have the `RED_SEA_SHIPPING_DISRUPTION` scenario template ready to
+      select in the Scenario Simulator.
+- [ ] Know the scenario ID format (`SCN-YYYYMMDD-000N`) so you can carry it
+      from Scenario Simulator -> Recommendations -> Reports on screen.
 
 ## Demo Flow
 
-### 1. Open the dashboard
+### [0:00-0:18] Scene 1 - Login Screen
 
-"This is the EnergyShield AI command center. At a glance, it shows our
-current top energy risks, the latest structured events we've picked up,
-any scenarios that have been triggered, and the recommendations currently
-active - everything an energy security analyst needs on one screen."
+[On screen: "Energy supply-chain intelligence, before the disruption
+hits."]
 
-### 2. Show the digital twin map
+"Hackathon Problem Statement 2 asks for AI-driven energy supply chain
+resilience for import-dependent economies. Here's the context: India
+imports 88% of its crude oil, and 40 to 45% of that transits the Strait of
+Hormuz. The 2025 US-Iran standoff sent Brent crude up over 8% in a single
+session. Our Strategic Petroleum Reserve covers just 9.5 days of
+consumption. And McKinsey found that economies without automated rerouting
+took 47 days longer to stabilize supply after a shock. This is EnergyShield
+AI - we built the intelligence layer the problem statement says doesn't
+exist yet."
 
-"This map is our digital twin of India's crude oil import network: the
-supplier countries we source from, the shipping routes and chokepoints
-they pass through, the Indian import ports, our refineries, and our
-strategic petroleum reserve sites. This is the structural backbone
-everything else in the platform reasons over."
+### [0:18-0:48] Scene 2 - Command Center / Dashboard
 
-### 3. Inject or select a seeded Red Sea maritime alert
+[On screen: Highest Risk Level "Severe", Active Events "5", Top Risks,
+Latest Events feed.]
 
-"Now let's simulate a real-world trigger. I'll select this seeded maritime
-alert about a Red Sea shipping incident - the kind of advisory that would
-normally come in from UKMTO or a similar maritime security feed."
+"This is the analyst's Command Center - the Geopolitical Risk Intelligence
+Agent the brief calls for, live. Right now: Severe risk across 14 corridors
+and suppliers, 5 active events just detected. Novorossiysk to Jamnagar and
+Bab el-Mandeb are both scoring Severe. On the right, structured events
+pulled continuously from maritime alerts, PortWatch chokepoint data,
+sanctions registries, and commodity prices - not a weekly report, a live
+feed, exactly as the problem statement demands."
 
-### 4. Event extraction agent classifies it
+### [0:48-1:23] Scene 3 - Risk Monitor + Evidence + Explainability
 
-"Watch what happens next: our event extraction agent reads the raw alert
-text and converts it into a structured risk event, classifying it as a
-`RED_SEA_SHIPPING_DISRUPTION` candidate with a severity and confidence
-score - not just a headline, but a machine-readable event our pipeline can
-act on."
+[On screen: corridor cards -> evidence modal -> score history /
+explainability panel.]
 
-### 5. Knowledge graph links the event to affected entities
+"The Risk Monitor breaks this down per corridor. Strait of Hormuz: Severe,
+62.9. Bab el-Mandeb: 65.2."
 
-"That event doesn't sit in isolation. Our knowledge graph immediately
-links it to the Red Sea shipping route, the Bab el-Mandeb chokepoint, the
-Suez route, and every Indian refinery that graph-traversal shows is
-downstream of that corridor - so we know exactly who is exposed, not just
-that something happened."
+[Click an "evidence event(s)" link.]
 
-### 6. Risk score increases for the corridor
+"Every score is backed by evidence - a UKMTO maritime attack warning, an
+AIS stream showing vessels rerouting out of the Red Sea, PortWatch
+congestion at Suez - timestamped, sourced, confidence-scored."
 
-"You can see the Red Sea/Suez corridor risk score jump in real time, and
-the dashboard shows exactly why - top drivers like the maritime event
-severity, source reliability, and India's import exposure through that
-corridor, with the underlying evidence event linked."
+[Scroll to the Score History + Explainability panel.]
 
-### 7. Scenario modeller estimates impact
-
-"Because the risk crossed our threshold, the scenario modeller automatically
-runs a `RED_SEA_SHIPPING_DISRUPTION` simulation, estimating supply at risk,
-expected delay days, freight cost impact, and which refineries are exposed
-- every number here comes with its assumptions shown, not hidden inside a
+"And this is the part judges care about most: scenario fidelity means
+assumptions have to be explicit and testable. Here they are - top drivers,
+the exact evidence IDs behind the score, and the scoring formula's
+assumptions, openly flagged where they're simulated versus observed. No
 black box."
 
-### 8. Procurement agent ranks alternatives
+### [1:23-2:08] Scene 4 - Scenario Simulator
 
-"With the impact estimated, the procurement agent ranks alternatives for
-us automatically - in this case, rerouting via the Cape of Good Hope and
-pulling more from suppliers outside the Red Sea corridor - each option
-scored on cost, route safety, supplier reliability, delivery time, and
-refinery compatibility."
+[On screen: 9-template dropdown -> select Red Sea Shipping Disruption ->
+run -> results.]
 
-### 9. SPR agent recommends action
+"This is the Disruption Scenario Modeller the problem statement calls for.
+We've built the exact scenarios this region keeps living through - Hormuz
+Partial Closure, Red Sea Shipping Disruption, OPEC+ Supply Cut, Sanctions
+Shock - plus we extended the same engine to LNG, coal, fertilizer, and
+critical minerals."
 
-"In parallel, the SPR agent looks at how long this disruption is expected
-to persist and recommends whether to simply monitor the situation or begin
-a controlled strategic reserve drawdown - it's deliberately conservative,
-so a short, low-severity event won't trigger reserve releases unnecessarily."
+[Select Red Sea Shipping Disruption, High severity, 25 days duration,
+click Run scenario.]
 
-### 10. Dashboard shows the action plan and generates a report
+"Let's simulate a Red Sea shipping disruption against our supply chain
+digital twin."
 
-"Finally, everything comes together into a single action plan on the
-dashboard, and with one click we generate an executive-ready report
-summarizing the event, the risk change, the scenario impact, and the
-recommended response - fully backed by an audit trail from the original
-signal all the way through to this recommendation."
+[Results populate.]
 
-## Closing Line
+"In seconds: 8.9% of supply at risk, a 20.8-day delay, a 24.8% freight cost
+spike, a 3.6% fuel price hike, minus 0.13% GDP drag, 86% confidence -
+flagged Action Required. It's already traced this through the knowledge
+graph to the refineries actually exposed - Reliance Jamnagar and IOCL
+Paradip, linked to Bab el-Mandeb and Suez Canal. And it states its
+assumptions outright: import share is estimated, exact cargo ownership is
+simulated, Cape of Good Hope rerouting adds distance rather than removing
+supply. That's cascading impact modeling, done honestly."
 
-"That's the full loop: a real-world signal becomes a structured event,
-the knowledge graph tells us who's exposed, risk scores update
-automatically, a scenario quantifies the impact, and procurement and
-reserve recommendations come out the other end - all explainable and
-auditable, and built to extend beyond crude oil into LNG, coal,
-fertilizers, and critical minerals."
+### [2:08-2:33] Scene 5 - Recommendation Center
+
+[On screen: load scenario ID -> ranked options table -> SPR plan.]
+
+"That scenario feeds straight into the Adaptive Procurement Orchestrator
+and the Strategic Reserve Optimisation Agent - the two hardest asks in the
+problem statement."
+
+[Load recommendation.]
+
+"Three ranked, executable alternatives: Iraq via Basra to Jamnagar - 4.5
+day delay, 5.2% cost impact, 84% feasibility, Immediate priority. Saudi
+Arabia and UAE as contingency. And the SPR call, right below it:
+supply-at-risk and delay both stay within normal buffers, so drawdown is
+not warranted - 83% confidence, logged against an audit ID. Recommendations
+a procurement team can act on within hours, not days - exactly the
+executability the evaluation criteria are grading."
+
+### [2:33-2:53] Scene 6 - Reports
+
+[On screen: generate report -> executive brief scrolls.]
+
+"Every scenario and recommendation rolls into an executive brief on
+demand - report ID, scenario ID, recommendation ID, audit ID, all
+cross-referenced, assumptions restated, exportable straight to PDF. This is
+the anticipatory, managed response process the brief asks for, replacing
+the reactive scramble."
+
+### [2:53-3:07] Scene 7 - Energy Map
+
+[On screen: Leaflet map with ports/refineries/SPR/routes/chokepoints.]
+
+"Underneath all of it is the Supply Chain Digital Twin - export ports,
+import ports, refineries, SPR sites, chokepoints, shipping routes, wellhead
+to refinery to distribution. This isn't a static map - it's the live
+knowledge graph the risk and scenario engines query directly."
+
+### [3:07-3:18] Scene 8 - Commodity Command Center
+
+[On screen: Crude Oil -> LNG -> Coal -> Fertilizer -> Critical Minerals
+tabs.]
+
+"And because the data model is commodity-agnostic, the same engine already
+reaches past crude oil - LNG, coal, fertilizer, critical minerals, each
+with its own entities, risk scores, and scenario templates. Crude oil is
+our fully live MVP; these are architecturally complete and openly marked
+illustrative pending live feeds. We'd rather show an honest roadmap than a
+faked one."
+
+### [3:18-3:20] Scene 9 - Close
+
+"EnergyShield AI: geopolitical risk, turned into a structured, explainable,
+executable response - before disruption hits. Thank you."
+
+## Delivery Notes
+
+- Every scene opens by naming the exact problem-statement capability it
+  satisfies (Geopolitical Risk Intelligence Agent, Disruption Scenario
+  Modeller, Adaptive Procurement Orchestrator, Strategic Reserve
+  Optimisation Agent, Supply Chain Digital Twin) - judges scoring against
+  that rubric hear their own five bullet points read back in order.
+- Scene 3 and Scene 4's honesty lines ("no black box", stated assumptions)
+  are credibility anchors - don't cut them even under time pressure; the
+  evaluation focus explicitly rewards "scenario model fidelity - assumptions
+  must be explicit and testable."
+- If short on time, Scene 3's evidence-modal beat and Scene 8's commodity
+  tabs are the safest to trim first. Scenes 2, 4, 5, and 6 are the core
+  signal-to-recommendation loop and should stay intact.
