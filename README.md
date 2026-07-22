@@ -33,67 +33,7 @@ In the modern geopolitical landscape, supply chain disruptions (from canal block
 
 EnergyShield-AI follows a clean **6-layer signal-to-decision pipeline** — from raw global signals to actionable procurement intelligence.
 
-```mermaid
-flowchart LR
-
-    subgraph L1["  📡  LAYER 1 — DATA ACQUISITION  "]
-        direction TB
-        S1["GDELT\nGeopolitical News"]
-        S2["OFAC SDN\nSanctions List"]
-        S3["IMF PortWatch\nMaritime Activity"]
-        S4["EIA · Alpha Vantage\nCommodity Prices"]
-    end
-
-    subgraph L2["  ⚙️  LAYER 2 — INGESTION & NORMALIZATION  "]
-        direction TB
-        I1["Event &\nNews Collector"]
-        I2["Sanctions\nCollector"]
-        I3["Commodity Price\nCollector"]
-    end
-
-    subgraph L3["  🤖  LAYER 3 — AI AGENT ENSEMBLE  "]
-        direction TB
-        A1["Event Extraction\nAgent"]
-        A2["Entity Resolution\nAgent"]
-        A3["Geopolitical Risk\nAgent"]
-    end
-
-    subgraph L4["  🕸️  LAYER 4 — NEO4J DIGITAL TWIN  "]
-        direction TB
-        G1["Suppliers &\nChokepoints"]
-        G2["Shipping Routes\n& Ports"]
-        G3["Refineries &\nDemand Centers"]
-    end
-
-    subgraph L5["  🧠  LAYER 5 — INTELLIGENCE ENGINE  "]
-        direction TB
-        C1["Risk Scoring\nEngine"]
-        C2["Scenario\nSimulator"]
-        C3["Procurement\nOptimizer"]
-        C4["SPR\nOptimizer"]
-    end
-
-    subgraph L6["  💼  LAYER 6 — ANALYST COMMAND CENTER  "]
-        direction TB
-        F1["Risk Monitor\nDashboard"]
-        F2["Scenario\nSimulator UI"]
-        F3["Procurement\nRecommendations"]
-        F4["Energy Map\n& Reports"]
-    end
-
-    L1 ==>|"Raw Signals"| L2
-    L2 ==>|"Structured Events"| L3
-    L3 ==>|"Classified Entities"| L4
-    L4 ==>|"Graph Context"| L5
-    L5 ==>|"REST API / FastAPI"| L6
-
-    style L1 fill:#0D1B2A,stroke:#4A90D9,stroke-width:2px,color:#E8F4FD
-    style L2 fill:#0D1B2A,stroke:#27AE60,stroke-width:2px,color:#E8F4FD
-    style L3 fill:#0D1B2A,stroke:#8E44AD,stroke-width:2px,color:#E8F4FD
-    style L4 fill:#0D1B2A,stroke:#E67E22,stroke-width:2px,color:#E8F4FD
-    style L5 fill:#0D1B2A,stroke:#E74C3C,stroke-width:2px,color:#E8F4FD
-    style L6 fill:#0D1B2A,stroke:#1ABC9C,stroke-width:2px,color:#E8F4FD
-```
+![EnergyShield-AI System Architecture](./docs/architecture.png)
 
 > **End-to-end flow:** Global signals are ingested, classified by AI agents, stored in a Neo4j knowledge graph modelling the supply chain as a Digital Twin, scored by the Risk Engine, simulated for downstream economic impact, and surfaced to analysts through a premium React dashboard — all in real-time.
 
